@@ -70,8 +70,8 @@ export default {
     lastUpdated: 'Last Updated: April 2026',
     sections: [
       {
-        title: '1. 7-Day No-Questions-Asked Refund Guarantee',
-        content: 'This product offers a 7-day no-questions-asked refund guarantee. Within 7 days of purchase, if the product does not function properly or its features significantly differ from the description, you may apply for a full refund.'
+        title: '1. 14-Day No-Questions-Asked Refund Guarantee',
+        content: 'This product offers a 7-day no-questions-asked refund guarantee. Within 14 days of purchase, if the product does not function properly or its features significantly differ from the description, you may apply for a full refund.'
       },
       {
         title: '2. How to Apply for a Refund',
