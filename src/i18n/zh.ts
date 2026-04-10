@@ -5,17 +5,33 @@ export default {
   },
   hero: {
     title: 'Edit Page',
-    subtitle: '一键编辑任何网页',
-    description: '一个简单的浏览器扩展，让您可以直接编辑任何网页。非常适合截图、原型制作和快速编辑。',
+    subtitle: '一款功能强大的浏览器工具，支持实时编辑任意网页内容',
+    description: '一款功能强大的浏览器工具，支持实时编辑任意网页内容。100%本地运行，不收集用户数据，隐私安全。',
     cta: '添加到 Chrome'
   },
   features: {
     title: '功能特点',
     list: [
-      { title: '一键编辑', desc: '在任何网页上即时切换编辑模式' },
-      { title: '截图就绪', desc: '将编辑后的页面复制到剪贴板' },
-      { title: '替换图片', desc: '用您自己的图片替换页面上的图片' }
+      { title: '一键修改网页文字内容', desc: '实时编辑网页上的任何文字内容' },
+      { title: '自由替换网页图片', desc: '用您自己的图片替换页面上的图片' },
+      { title: '全屏截图一键导出', desc: '将编辑后的页面一键导出为截图' },
+      { title: '隐私安全', desc: '100%本地运行，不收集用户数据' }
     ]
+  },
+  pricing: {
+    title: '定价',
+    list: [
+      { title: '终身授权', price: '¥59 / $9.99', desc: '一次性付费，永久使用，包含所有后续免费更新' },
+      { title: '按月订阅', price: '¥7 / $1', desc: '灵活选择，按月付费' }
+    ]
+  },
+  browsers: {
+    title: '适用浏览器',
+    desc: 'Chrome / Edge / Firefox 等主流Chromium内核浏览器'
+  },
+  contact: {
+    title: '联系我们',
+    email: '客服邮箱：henrizhang@henri.ren'
   },
   footer: {
     terms: '服务条款',

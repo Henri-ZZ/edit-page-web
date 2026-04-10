@@ -5,17 +5,33 @@ export default {
   },
   hero: {
     title: 'Edit Page',
-    subtitle: 'Make any webpage editable with one click',
-    description: 'A simple browser extension that lets you edit any webpage directly. Perfect for screenshots, mockups, and quick edits.',
+    subtitle: 'A powerful browser tool for editing any webpage content in real-time',
+    description: 'A powerful browser tool that supports real-time editing of any webpage content. Runs 100% locally, no user data collection, privacy and security guaranteed.',
     cta: 'Add to Chrome'
   },
   features: {
     title: 'Features',
     list: [
-      { title: 'One-Click Edit', desc: 'Toggle edit mode instantly on any webpage' },
-      { title: 'Screenshot Ready', desc: 'Capture your edited page to clipboard' },
-      { title: 'Replace Images', desc: 'Swap images on the page with your own' }
+      { title: 'Edit Webpage Text with One Click', desc: 'Edit any text content on webpages in real-time' },
+      { title: 'Freely Replace Webpage Images', desc: 'Replace images on the page with your own' },
+      { title: 'One-Click Full Page Screenshot Export', desc: 'Export edited pages as screenshots with one click' },
+      { title: 'Privacy and Security', desc: 'Runs 100% locally, no user data collection' }
     ]
+  },
+  pricing: {
+    title: 'Pricing',
+    list: [
+      { title: 'Lifetime License', price: '$9.99 / ¥59', desc: 'One-time payment, permanent use, includes all future free updates' },
+      { title: 'Monthly Subscription', price: '$1 / ¥7', desc: 'Flexible option, pay monthly' }
+    ]
+  },
+  browsers: {
+    title: 'Supported Browsers',
+    desc: 'Chrome / Edge / Firefox and other major Chromium-based browsers'
+  },
+  contact: {
+    title: 'Contact Us',
+    email: 'Email: henrizhang@henri.ren'
   },
   footer: {
     terms: 'Terms of Service',

@@ -29,4 +29,38 @@ const t = translations[lang];
       </div>
     </div>
   </section>
+
+  <section class="pricing">
+    <div class="container">
+      <h2>{t.pricing.title}</h2>
+      <div class="pricing-grid">
+        {t.pricing.list.map((plan) => (
+          <div class="pricing-card">
+            <h3>{plan.title}</h3>
+            <div class="price">{plan.price}</div>
+            <p>{plan.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="browsers">
+    <div class="container">
+      <h2>{t.browsers.title}</h2>
+      <p>{t.browsers.desc}</p>
+    </div>
+  </section>
+
+  <section class="contact">
+    <div class="container">
+      <h2>{t.contact.title}</h2>
+      <p>{t.contact.email}</p>
+    </div>
+  </section>
 </BaseLayout>
+
+<script>
+  // Mark that user has been redirected to prevent looping
+  sessionStorage.setItem('langRedirected', 'true');
+</script>

@@ -59,6 +59,9 @@ const t = translations[lang];
     .nav-links a:hover {
       color: #333;
     }
+    .nav-links .cta-button {
+      color: white;
+    }
     .lang-toggle {
       background: none;
       border: 1px solid #ddd;
@@ -68,62 +71,123 @@ const t = translations[lang];
       font-size: 14px;
     }
     .hero {
-      padding: 80px 0;
+      padding: 50px 0;
       text-align: center;
     }
     .hero h1 {
-      font-size: 48px;
-      margin-bottom: 10px;
+      font-size: 36px;
+      margin-bottom: 8px;
     }
     .hero .subtitle {
-      font-size: 24px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-    .hero .description {
       font-size: 18px;
       color: #666;
+      margin-bottom: 15px;
+    }
+    .hero .description {
+      font-size: 15px;
+      color: #666;
       max-width: 600px;
-      margin: 0 auto 30px;
+      margin: 0 auto 20px;
     }
     .cta-button {
       display: inline-block;
       background: #4285f4;
       color: white;
-      padding: 12px 30px;
+      padding: 10px 24px;
       border-radius: 8px;
       text-decoration: none;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 500;
     }
     .cta-button:hover {
       background: #3367d6;
     }
     .features {
-      padding: 60px 0;
+      padding: 40px 0;
       background: #f8f9fa;
     }
     .features h2 {
       text-align: center;
-      font-size: 32px;
-      margin-bottom: 40px;
+      font-size: 24px;
+      margin-bottom: 25px;
     }
     .feature-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
     }
     .feature-card {
       background: white;
-      padding: 30px;
-      border-radius: 12px;
+      padding: 20px;
+      border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     .feature-card h3 {
-      font-size: 20px;
-      margin-bottom: 10px;
+      font-size: 16px;
+      margin-bottom: 8px;
     }
     .feature-card p {
+      color: #666;
+      font-size: 14px;
+    }
+    .pricing {
+      padding: 40px 0;
+    }
+    .pricing h2 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 25px;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .pricing-card {
+      background: white;
+      padding: 25px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-align: center;
+      border: 2px solid #eee;
+    }
+    .pricing-card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .pricing-card .price {
+      font-size: 28px;
+      font-weight: bold;
+      color: #4285f4;
+      margin: 12px 0;
+    }
+    .pricing-card p {
+      color: #666;
+      font-size: 14px;
+    }
+    .browsers {
+      padding: 40px 0;
+      background: #f8f9fa;
+      text-align: center;
+    }
+    .browsers h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    .browsers p {
+      font-size: 15px;
+      color: #666;
+    }
+    .contact {
+      padding: 40px 0;
+      text-align: center;
+    }
+    .contact h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    .contact p {
+      font-size: 15px;
       color: #666;
     }
     footer {
