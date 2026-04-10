@@ -1,0 +1,59 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { translations, type Language } from '@/i18n/ui';
+
+interface Props {
+  lang?: Language;
+  title: string;
+  content: {
+    title: string;
+    lastUpdated: string;
+    sections: Array<{ title: string; content: string }>;
+  };
+}
+
+const { lang = 'en', title, content } = Astro.props;
+---
+
+<BaseLayout lang={lang} title={title}>
+  <style>
+    .page-content {
+      padding: 60px 0;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .page-content h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    .last-updated {
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+    .page-content section {
+      margin-bottom: 30px;
+    }
+    .page-content h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .page-content p {
+      color: #555;
+      line-height: 1.8;
+    }
+  </style>
+  <div class="container">
+    <div class="page-content">
+      <h1>{content.title}</h1>
+      <p class="last-updated">{content.lastUpdated}</p>
+      {content.sections.map((section) => (
+        <section>
+          <h2>{section.title}</h2>
+          <p>{section.content}</p>
+        </section>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,32 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { translations } from '@/i18n/ui';
+
+const lang = 'en';
+const t = translations[lang];
+---
+
+<BaseLayout lang={lang} title="Edit Page - Edit any webpage">
+  <section class="hero">
+    <div class="container">
+      <h1>{t.hero.title}</h1>
+      <p class="subtitle">{t.hero.subtitle}</p>
+      <p class="description">{t.hero.description}</p>
+      <a href="https://chrome.google.com/webstore" class="cta-button" target="_blank">{t.hero.cta}</a>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2>{t.features.title}</h2>
+      <div class="feature-grid">
+        {t.features.list.map((feature) => (
+          <div class="feature-card">
+            <h3>{feature.title}</h3>
+            <p>{feature.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

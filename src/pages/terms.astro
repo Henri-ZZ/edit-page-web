@@ -1,0 +1,9 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+import { translations } from '@/i18n/ui';
+
+const lang = 'en';
+const t = translations[lang];
+---
+
+<PageLayout lang={lang} title={`${t.terms.title} | Edit Page`} content={t.terms} />
