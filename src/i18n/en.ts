@@ -21,8 +21,8 @@ export default {
   pricing: {
     title: 'Pricing',
     list: [
-      { title: 'Lifetime License', price: '$9.99 / ¥59', desc: 'One-time payment, permanent use, includes all future free updates' },
-      { title: 'Monthly Subscription', price: '$1 / ¥7', desc: 'Flexible option, pay monthly' }
+      { title: 'Lifetime License', price: '$9.99', desc: 'One-time payment, permanent use, includes all future free updates' },
+      { title: 'Monthly Subscription', price: '$1', desc: 'Flexible option, pay monthly' }
     ]
   },
   browsers: {

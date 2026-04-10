@@ -21,8 +21,8 @@ export default {
   pricing: {
     title: '定价',
     list: [
-      { title: '终身授权', price: '¥59 / $9.99', desc: '一次性付费，永久使用，包含所有后续免费更新' },
-      { title: '按月订阅', price: '¥7 / $1', desc: '灵活选择，按月付费' }
+      { title: '终身授权', price: '¥59', desc: '一次性付费，永久使用，包含所有后续免费更新' },
+      { title: '按月订阅', price: '¥7', desc: '灵活选择，按月付费' }
     ]
   },
   browsers: {

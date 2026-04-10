@@ -4,6 +4,10 @@ import { translations } from '@/i18n/ui';
 
 const lang = 'zh';
 const t = translations[lang];
+
+// Paddle product IDs - leave empty for now
+const PADDLE_LIFETIME_ID = '';
+const PADDLE_MONTHLY_ID = '';
 ---
 
 <BaseLayout lang={lang} title="Edit Page - 编辑任何网页">
@@ -34,13 +38,22 @@ const t = translations[lang];
     <div class="container">
       <h2>{t.pricing.title}</h2>
       <div class="pricing-grid">
-        {t.pricing.list.map((plan) => (
-          <div class="pricing-card">
-            <h3>{plan.title}</h3>
-            <div class="price">{plan.price}</div>
-            <p>{plan.desc}</p>
-          </div>
-        ))}
+        <div class="pricing-card">
+          <h3>{t.pricing.list[1].title}</h3>
+          <div class="price">{t.pricing.list[1].price}</div>
+          <p>{t.pricing.list[1].desc}</p>
+          <a href={PADDLE_MONTHLY_ID ? `https://checkout.paddle.com/checkout/${PADDLE_MONTHLY_ID}` : '#'} class="pricing-buy-button">
+            立即购买
+          </a>
+        </div>
+        <div class="pricing-card featured">
+          <h3>{t.pricing.list[0].title}</h3>
+          <div class="price">{t.pricing.list[0].price}</div>
+          <p>{t.pricing.list[0].desc}</p>
+          <a href={PADDLE_LIFETIME_ID ? `https://checkout.paddle.com/checkout/${PADDLE_LIFETIME_ID}` : '#'} class="pricing-buy-button">
+            立即购买
+          </a>
+        </div>
       </div>
     </div>
   </section>
