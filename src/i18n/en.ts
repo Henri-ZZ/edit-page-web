@@ -21,11 +21,11 @@ export default {
     terms: 'Terms of Service',
     refund: 'Refund Policy',
     privacy: 'Privacy Policy',
-    copyright: '© 2025 Edit Page. All rights reserved.'
+    copyright: '© 2026 Edit Page. All rights reserved.'
   },
   terms: {
     title: 'Terms of Service',
-    lastUpdated: 'Last Updated: April 2025',
+    lastUpdated: 'Last Updated: April 2026',
     sections: [
       {
         title: '1. Acceptance of Terms',
@@ -43,11 +43,11 @@ export default {
   },
   refund: {
     title: 'Refund Policy',
-    lastUpdated: 'Last Updated: April 2025',
+    lastUpdated: 'Last Updated: April 2026',
     sections: [
       {
-        title: '1. 30-Day Money Back Guarantee',
-        content: 'If you are not satisfied with Edit Page, you can request a refund within 30 days of purchase.'
+        title: '1. 7-Day Money Back Guarantee',
+        content: 'If you are not satisfied with Edit Page, you can request a refund within 7 days of purchase.'
       },
       {
         title: '2. How to Request',
@@ -61,7 +61,7 @@ export default {
   },
   privacy: {
     title: 'Privacy Policy',
-    lastUpdated: 'Last Updated: April 2025',
+    lastUpdated: 'Last Updated: April 2026',
     sections: [
       {
         title: '1. Data Collection',
@@ -73,7 +73,7 @@ export default {
       },
       {
         title: '3. Contact',
-        content: 'If you have questions, contact us at privacy@edit-page.com.'
+        content: 'If you have questions, contact us at henrizhang@henri.ren.'
       }
     ]
   }

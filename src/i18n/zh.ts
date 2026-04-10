@@ -21,11 +21,11 @@ export default {
     terms: '服务条款',
     refund: '退款政策',
     privacy: '隐私政策',
-    copyright: '© 2025 Edit Page。保留所有权利。'
+    copyright: '© 2026 Edit Page。保留所有权利。'
   },
   terms: {
     title: '服务条款',
-    lastUpdated: '最后更新：2025年4月',
+    lastUpdated: '最后更新：2026年4月',
     sections: [
       {
         title: '1. 接受条款',
@@ -43,11 +43,11 @@ export default {
   },
   refund: {
     title: '退款政策',
-    lastUpdated: '最后更新：2025年4月',
+    lastUpdated: '最后更新：2026年4月',
     sections: [
       {
-        title: '1. 30天退款保证',
-        content: '如果您对 Edit Page 不满意，可以在购买后 30 天内申请退款。'
+        title: '1. 7天退款保证',
+        content: '如果您对 Edit Page 不满意，可以在购买后 7 天内申请退款。'
       },
       {
         title: '2. 如何申请',
@@ -61,7 +61,7 @@ export default {
   },
   privacy: {
     title: '隐私政策',
-    lastUpdated: '最后更新：2025年4月',
+    lastUpdated: '最后更新：2026年4月',
     sections: [
       {
         title: '1. 数据收集',
@@ -73,7 +73,7 @@ export default {
       },
       {
         title: '3. 联系方式',
-        content: '如有疑问，请通过 privacy@edit-page.com 联系我们。'
+        content: '如有疑问，请通过 henrizhang@henri.ren 联系我们。'
       }
     ]
   }
