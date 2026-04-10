@@ -4,10 +4,6 @@ import { translations } from '@/i18n/ui';
 
 const lang = 'en';
 const t = translations[lang];
-
-// Paddle product IDs - leave empty for now
-const PADDLE_LIFETIME_ID = '';
-const PADDLE_MONTHLY_ID = '';
 ---
 
 <BaseLayout lang={lang} title="Edit Page - Edit any webpage">
@@ -42,17 +38,17 @@ const PADDLE_MONTHLY_ID = '';
           <h3>{t.pricing.list[1].title}</h3>
           <div class="price">{t.pricing.list[1].price}</div>
           <p>{t.pricing.list[1].desc}</p>
-          <a href={PADDLE_MONTHLY_ID ? `https://checkout.paddle.com/checkout/${PADDLE_MONTHLY_ID}` : '#'} class="pricing-buy-button">
+          <button class="pricing-buy-button" data-plan="monthly">
             Buy Now
-          </a>
+          </button>
         </div>
         <div class="pricing-card featured">
           <h3>{t.pricing.list[0].title}</h3>
           <div class="price">{t.pricing.list[0].price}</div>
           <p>{t.pricing.list[0].desc}</p>
-          <a href={PADDLE_LIFETIME_ID ? `https://checkout.paddle.com/checkout/${PADDLE_LIFETIME_ID}` : '#'} class="pricing-buy-button">
+          <button class="pricing-buy-button" data-plan="lifetime">
             Buy Now
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -73,7 +69,43 @@ const PADDLE_MONTHLY_ID = '';
   </section>
 </BaseLayout>
 
-<script>
+<script is:inline>
+  // Open Paddle checkout
+  function openCheckout(productId) {
+    if (!productId) {
+      alert('Product ID not configured. Please check back later.');
+      return;
+    }
+
+    if (typeof Paddle === 'undefined') {
+      alert('Paddle not initialized. Please refresh the page.');
+      return;
+    }
+
+    Paddle.Checkout.open({
+      items: [{ priceId: productId, quantity: 1 }]
+    });
+  }
+
+  // Get product ID from config based on plan
+  function getProductId(plan) {
+    const cfg = window.EDIT_PAGE_PADDLE_CONFIG;
+    if (!cfg || !cfg.priceIds) return null;
+    return cfg.priceIds[plan];
+  }
+
+  // Add click handlers to buy buttons
+  document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.pricing-buy-button[data-plan]');
+    buttons.forEach(button => {
+      button.addEventListener('click', function() {
+        const plan = this.getAttribute('data-plan');
+        const productId = getProductId(plan);
+        openCheckout(productId);
+      });
+    });
+  });
+
   // Auto-detect browser language and redirect if needed
   (function() {
     // Check if user has already been redirected in this session
@@ -82,7 +114,7 @@ const PADDLE_MONTHLY_ID = '';
     }
 
     // Get browser language
-    const browserLang = navigator.language || (navigator as any).userLanguage;
+    const browserLang = navigator.language || navigator.userLanguage;
 
     // If browser language is Chinese, redirect to Chinese version
     if (browserLang && browserLang.startsWith('zh')) {

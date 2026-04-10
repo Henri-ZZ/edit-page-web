@@ -4,37 +4,6 @@ import { translations } from '@/i18n/ui';
 
 const lang = 'en';
 const t = translations[lang];
-
-// Get URL parameters for Paddle
-const url = Astro.url;
-const productId = url.searchParams.get('product_id') || '';
-const coupon = url.searchParams.get('coupon') || '';
-const quantity = url.searchParams.get('quantity') || '';
-
-// Paddle checkout URL
-// Replace YOUR_PRODUCT_ID with actual product IDs
-const PADDLE_LIFETIME_ID = ''; // TODO: Add your lifetime product ID
-const PADDLE_MONTHLY_ID = ''; // TODO: Add your monthly product ID
-
-function getPaddleCheckoutUrl(productId: string, options: { coupon?: string; quantity?: string } = {}) {
-  if (!productId) return '#';
-
-  const params = new URLSearchParams();
-  if (options.coupon) params.set('coupon', options.coupon);
-  if (options.quantity) params.set('quantity', options.quantity);
-
-  const queryString = params.toString();
-  return `https://checkout.paddle.com/checkout/${productId}${queryString ? '?' + queryString : ''}`;
-}
-
-const lifetimeUrl = getPaddleCheckoutUrl(PADDLE_LIFETIME_ID, { coupon, quantity });
-const monthlyUrl = getPaddleCheckoutUrl(PADDLE_MONTHLY_ID, { coupon, quantity });
-
-// If URL has product_id parameter, auto-redirect
-const autoRedirectProductId = url.searchParams.get('product_id');
-if (autoRedirectProductId && Astro.request.method === 'GET') {
-  return Astro.redirect(getPaddleCheckoutUrl(autoRedirectProductId, { coupon, quantity }));
-}
 ---
 
 <BaseLayout lang={lang} title="Pricing | Edit Page">
@@ -112,10 +81,6 @@ if (autoRedirectProductId && Astro.request.method === 'GET') {
     .pricing-card .buy-button:hover {
       background: #3367d6;
     }
-    .pricing-card .buy-button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
     .note {
       text-align: center;
       margin-top: 40px;
@@ -132,42 +97,65 @@ if (autoRedirectProductId && Astro.request.method === 'GET') {
           <h3>{t.pricing.list[1].title}</h3>
           <div class="price">{t.pricing.list[1].price}</div>
           <p>{t.pricing.list[1].desc}</p>
-          <a href={monthlyUrl} class="buy-button">
+          <button class="buy-button" data-plan="monthly">
             Buy Now
-          </a>
+          </button>
         </div>
         <div class="pricing-card featured">
           <h3>{t.pricing.list[0].title}</h3>
           <div class="price">{t.pricing.list[0].price}</div>
           <p>{t.pricing.list[0].desc}</p>
-          <a href={lifetimeUrl} class="buy-button">
+          <button class="buy-button" data-plan="lifetime">
             Buy Now
-          </a>
+          </button>
         </div>
       </div>
       <p class="note">Secure payment processed by Paddle</p>
     </div>
   </section>
 
-  <script>
-    // Client-side auto-redirect if needed
-    (function() {
+  <script is:inline>
+    // Open Paddle checkout
+    function openCheckout(productId) {
+      if (!productId) {
+        alert('Product ID not configured. Please check back later.');
+        return;
+      }
+
+      if (typeof Paddle === 'undefined') {
+        alert('Paddle not initialized. Please refresh the page.');
+        return;
+      }
+
+      Paddle.Checkout.open({
+        items: [{ priceId: productId, quantity: 1 }]
+      });
+    }
+
+    // Get product ID from config based on plan
+    function getProductId(plan) {
+      const cfg = window.EDIT_PAGE_PADDLE_CONFIG;
+      if (!cfg || !cfg.priceIds) return null;
+      return cfg.priceIds[plan];
+    }
+
+    // Add click handlers to buy buttons
+    document.addEventListener('DOMContentLoaded', function() {
+      const buttons = document.querySelectorAll('.buy-button[data-plan]');
+      buttons.forEach(button => {
+        button.addEventListener('click', function() {
+          const plan = this.getAttribute('data-plan');
+          const productId = getProductId(plan);
+          openCheckout(productId);
+        });
+      });
+
+      // Auto-open checkout if URL has product_id parameter
       const params = new URLSearchParams(window.location.search);
       const productId = params.get('product_id');
-
       if (productId) {
-        const coupon = params.get('coupon') || '';
-        const quantity = params.get('quantity') || '';
-
-        const checkoutParams = new URLSearchParams();
-        if (coupon) checkoutParams.set('coupon', coupon);
-        if (quantity) checkoutParams.set('quantity', quantity);
-
-        const queryString = checkoutParams.toString();
-        const checkoutUrl = `https://checkout.paddle.com/checkout/${productId}${queryString ? '?' + queryString : ''}`;
-
-        window.location.href = checkoutUrl;
+        openCheckout(productId);
       }
-    })();
+    });
   </script>
 </BaseLayout>

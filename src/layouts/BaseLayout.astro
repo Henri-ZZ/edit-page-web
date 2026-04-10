@@ -16,6 +16,8 @@ const t = translations[lang];
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title}</title>
+  <!-- Paddle.js -->
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <style is:global>
     * {
       margin: 0;
@@ -286,5 +288,60 @@ const t = translations[lang];
       <p class="copyright">{t.footer.copyright}</p>
     </div>
   </footer>
+
+  <script is:inline>
+    // Paddle Configuration
+    const PADDLE_ENVIRONMENTS = {
+      sandbox: {
+        clientToken: 'test_b199863fe4c1ba4aee821473731',
+        priceIds: {
+          lifetime: 'pri_01knvyjwd2zs93wkqhb5xk9npg',
+          monthly: 'pri_01knvyhe0az1wyctsxgy28sbt0'
+        }
+      },
+      production: {
+        clientToken: 'live_4388271e25ce3173f9764070f47',
+        priceIds: {
+          lifetime: 'pri_01knvsqmajmgk7tfmzzq0sxzyb',
+          monthly: 'pri_01knvsn3aytww71v19kt4yxgtz'
+        }
+      }
+    };
+
+    // Auto-detect environment based on hostname
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const ACTIVE_ENVIRONMENT = isLocalhost ? 'sandbox' : 'production';
+    const envConfig = PADDLE_ENVIRONMENTS[ACTIVE_ENVIRONMENT];
+    console.log('Paddle environment:', ACTIVE_ENVIRONMENT, '(localhost:', isLocalhost, ')');
+
+    // Store config globally for other scripts
+    window.EDIT_PAGE_PADDLE_CONFIG = {
+      clientToken: envConfig.clientToken,
+      environment: ACTIVE_ENVIRONMENT,
+      priceIds: envConfig.priceIds
+    };
+
+    // Wait for Paddle.js to load and initialize
+    function initPaddle() {
+      if (window.Paddle) {
+        console.log('Paddle loaded, initializing...');
+        Paddle.Environment.set(ACTIVE_ENVIRONMENT);
+        Paddle.Initialize({
+          token: envConfig.clientToken
+        });
+        console.log('✅ Paddle initialized');
+      } else {
+        console.log('Waiting for Paddle...');
+        setTimeout(initPaddle, 50);
+      }
+    }
+
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPaddle);
+    } else {
+      initPaddle();
+    }
+  </script>
 </body>
 </html>
