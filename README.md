@@ -13,7 +13,8 @@ npm run dev
 
 1. 把代码推到 GitHub
 2. 在 Vercel 导入项目
-3. 在 Vercel 的 `Settings > Environment Variables` 配置环境变量：
+3. 在 Vercel 的 `Settings > General` 里把 `Node.js Version` 设为 `20.x`
+4. 在 Vercel 的 `Settings > Environment Variables` 配置环境变量：
     - `PADDLE_WEBHOOK_SECRET`
     - `PADDLE_PRICE_LIFETIME`
     - `PUBLIC_PADDLE_ENV`
@@ -22,7 +23,7 @@ npm run dev
     - `LICENSE_KEY_SECRET`
     - `RESEND_API_KEY`
     - `RESEND_FROM_EMAIL`
-4. 部署完成
+5. 部署完成
 
 ## Vercel 环境变量
 
