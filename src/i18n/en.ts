@@ -21,8 +21,7 @@ export default {
   pricing: {
     title: 'Pricing',
     list: [
-      { title: 'Lifetime License', price: '$9.99', desc: 'One-time payment, permanent use, includes all future free updates' },
-      { title: 'Monthly Subscription', price: '$1', desc: 'Flexible option, pay monthly' }
+      { title: 'Perpetual License', price: '$9.99', desc: 'One-time payment, permanent use, includes all future free updates' }
     ]
   },
   browsers: {
@@ -60,8 +59,8 @@ export default {
         content: 'All payment processes are securely handled by the Paddle platform. This tool only provides software authorization and does not store any user payment information.'
       },
       {
-        title: '5. Refund Policy',
-        content: 'This tool offers a 14-day refund guarantee. Users may request a refund within 14 days of purchase.'
+        title: '5. Digital Product Notice',
+        content: 'This extension is a digital product, delivered immediately upon successful payment. By confirming your purchase, you agree to immediate delivery. Your 14-day right of withdrawal expires once you download or start using the product.'
       },
       {
         title: '6. Terms Updates',
@@ -74,16 +73,16 @@ export default {
     lastUpdated: 'Last Updated: April 2026',
     sections: [
       {
-        title: '1. 14-Day Refund Guarantee',
-        content: 'This product offers a 14-day refund guarantee. Users may apply for a full refund within 14 days of purchase.'
+        title: '1. Digital Product Notice',
+        content: 'This extension is a digital product, delivered immediately upon successful payment. By confirming your purchase, you agree to immediate delivery. Your 14-day right of withdrawal expires once you download or start using the product.'
       },
       {
-        title: '2. How to Apply for a Refund',
-        content: 'Refund applications must be submitted with your order number via customer service email. We will complete the review and refund processing within 3-5 business days.'
+        title: '2. Refund Eligibility',
+        content: 'Refunds are only available in cases of product malfunction, inability to use, or significant discrepancy from the description (not subjective dislike). Refunds are reviewed and processed by Paddle.'
       },
       {
-        title: '3. Refund Payment Method',
-        content: 'Refunds will be returned to the user\'s payment account via the original payment method. The arrival time depends on the payment platform\'s rules.'
+        title: '3. How to Apply for a Refund',
+        content: 'Refund applications must be submitted through the Paddle platform. We can assist by providing order/usage records, but final approval authority lies with Paddle.'
       }
     ]
   },

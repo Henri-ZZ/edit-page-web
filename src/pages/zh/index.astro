@@ -33,15 +33,7 @@ const t = translations[lang];
   <section class="pricing">
     <div class="container">
       <h2>{t.pricing.title}</h2>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <h3>{t.pricing.list[1].title}</h3>
-          <div class="price">{t.pricing.list[1].price}</div>
-          <p>{t.pricing.list[1].desc}</p>
-          <button class="pricing-buy-button" data-plan="monthly">
-            立即购买
-          </button>
-        </div>
+      <div class="pricing-grid" style="max-width: 400px; margin: 0 auto;">
         <div class="pricing-card featured">
           <h3>{t.pricing.list[0].title}</h3>
           <div class="price">{t.pricing.list[0].price}</div>
@@ -83,7 +75,16 @@ const t = translations[lang];
     }
 
     Paddle.Checkout.open({
-      items: [{ priceId: productId, quantity: 1 }]
+      items: [{ priceId: productId, quantity: 1 }],
+      successCallback: function(data) {
+        const orderId = data.transaction_id || data.id;
+        alert(
+          '付款成功！\n\n' +
+          '您的订单号：' + orderId + '\n\n' +
+          '请使用此订单号在插件中激活。\n\n' +
+          '您也可以在收据邮件的invoice附件中找到订单号。'
+        );
+      }
     });
   }
 

@@ -33,15 +33,7 @@ const t = translations[lang];
   <section class="pricing">
     <div class="container">
       <h2>{t.pricing.title}</h2>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <h3>{t.pricing.list[1].title}</h3>
-          <div class="price">{t.pricing.list[1].price}</div>
-          <p>{t.pricing.list[1].desc}</p>
-          <button class="pricing-buy-button" data-plan="monthly">
-            Buy Now
-          </button>
-        </div>
+      <div class="pricing-grid" style="max-width: 400px; margin: 0 auto;">
         <div class="pricing-card featured">
           <h3>{t.pricing.list[0].title}</h3>
           <div class="price">{t.pricing.list[0].price}</div>
