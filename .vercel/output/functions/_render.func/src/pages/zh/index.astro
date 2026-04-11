@@ -1,0 +1,112 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { translations } from '@/i18n/ui';
+
+const lang = 'zh';
+const t = translations[lang];
+---
+
+<BaseLayout lang={lang} title="Edit Page - 编辑任何网页">
+  <section class="hero">
+    <div class="container">
+      <h1>{t.hero.title}</h1>
+      <p class="subtitle">{t.hero.subtitle}</p>
+      <p class="description">{t.hero.description}</p>
+      <a href="https://chrome.google.com/webstore" class="cta-button" target="_blank">{t.hero.cta}</a>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2>{t.features.title}</h2>
+      <div class="feature-grid">
+        {t.features.list.map((feature) => (
+          <div class="feature-card">
+            <h3>{feature.title}</h3>
+            <p>{feature.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing">
+    <div class="container">
+      <h2>{t.pricing.title}</h2>
+      <div class="pricing-grid" style="max-width: 400px; margin: 0 auto;">
+        <div class="pricing-card featured">
+          <h3>{t.pricing.list[0].title}</h3>
+          <div class="price">{t.pricing.list[0].price}</div>
+          <p>{t.pricing.list[0].desc}</p>
+          <button class="pricing-buy-button" data-plan="lifetime">
+            立即购买
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="browsers">
+    <div class="container">
+      <h2>{t.browsers.title}</h2>
+      <p>{t.browsers.desc}</p>
+    </div>
+  </section>
+
+  <section class="contact">
+    <div class="container">
+      <h2>{t.contact.title}</h2>
+      <p>{t.contact.email}</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  // Open Paddle checkout
+  function openCheckout(productId) {
+    if (!productId) {
+      alert('产品 ID 未配置。请稍后再试。');
+      return;
+    }
+
+    if (typeof Paddle === 'undefined') {
+      alert('Paddle 未初始化。请刷新页面。');
+      return;
+    }
+
+    Paddle.Checkout.open({
+      items: [{ priceId: productId, quantity: 1 }],
+      successCallback: function(data) {
+        const orderId = data.transaction_id || data.id;
+        alert(
+          '付款成功！\n\n' +
+          '您的订单号：' + orderId + '\n\n' +
+          '请使用此订单号在插件中激活。\n\n' +
+          '您也可以在收据邮件的invoice附件中找到订单号。'
+        );
+      }
+    });
+  }
+
+  // Get product ID from config based on plan
+  function getProductId(plan) {
+    const cfg = window.EDIT_PAGE_PADDLE_CONFIG;
+    if (!cfg || !cfg.priceIds) return null;
+    return cfg.priceIds[plan];
+  }
+
+  // Add click handlers to buy buttons
+  document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.pricing-buy-button[data-plan]');
+    buttons.forEach(button => {
+      button.addEventListener('click', function() {
+        const plan = this.getAttribute('data-plan');
+        const productId = getProductId(plan);
+        openCheckout(productId);
+      });
+    });
+  });
+
+  // Mark that user has been redirected to prevent looping
+  sessionStorage.setItem('langRedirected', 'true');
+</script>

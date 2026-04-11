@@ -1,0 +1,55 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^\\/_image$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/api\\/paddle-webhook\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/privacy\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/refund\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/terms\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/zh\\/privacy\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/zh\\/refund\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/zh\\/terms\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/zh\\/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^\\/$",
+			"dest": "_render"
+		}
+	]
+}

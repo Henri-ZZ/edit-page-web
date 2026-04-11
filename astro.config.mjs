@@ -1,6 +1,9 @@
 import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel/serverless';
 
 export default defineConfig({
+  output: 'server',
+  adapter: vercel(),
   site: 'https://edit-page.yourdomain.com',
   i18n: {
     defaultLocale: 'en',

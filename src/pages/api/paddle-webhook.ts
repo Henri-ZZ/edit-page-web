@@ -1,162 +1,97 @@
 import type { APIRoute } from 'astro';
 
-// Paddle webhook secret key (from Paddle dashboard > Notifications > Webhooks)
-const PADDLE_WEBHOOK_SECRET = import.meta.env.PADDLE_WEBHOOK_SECRET || '';
+import { generateAuthorizationCode } from '@/lib/license';
+import { extractTransactionDetails, verifyPaddleSignature, type PaddleWebhookEvent } from '@/lib/paddle';
+import { sendLicenseEmail } from '@/lib/resend';
 
-// Simple license store (for demo - use a real database in production)
-const licenses = new Map<string, {
-  email: string;
-  orderId: string;
-  plan: 'lifetime' | 'oneMonth';
-  createdAt: number;
-}>();
+export const prerender = false;
 
-// Generate a simple license key
-function generateLicenseKey() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let key = '';
-  for (let i = 0; i < 4; i++) {
-    for (let j = 0; j < 4; j++) {
-      key += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    if (i < 3) key += '-';
-  }
-  return key;
-}
-
-// Send email with license key (placeholder - use Resend, SendGrid, etc. in production)
-async function sendLicenseEmail(email: string, licenseKey: string, plan: string) {
-  console.log(`[EMAIL] Would send to ${email}: License ${licenseKey} for ${plan}`);
-  // In production: integrate with Resend/SendGrid
-  // Example with Resend:
-  /*
-  await resend.emails.send({
-    from: 'Edit Page <noreply@edit-page.com>',
-    to: email,
-    subject: 'Your Edit Page License Key',
-    html: `<p>Thank you for your purchase!</p>
-           <p>Your license key: <strong>${licenseKey}</strong></p>
-           <p>Plan: ${plan}</p>
-           <p>Enter this key in the Edit Page extension to activate.</p>`
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
-  */
 }
 
-// Verify Paddle webhook signature
-async function verifyWebhookSignature(request: Request, body: string): Promise<boolean> {
-  if (!PADDLE_WEBHOOK_SECRET) {
-    console.warn('[PADDLE] No webhook secret configured, skipping verification');
-    return true; // Skip verification for demo
+function getLicenseSecret() {
+  const secret = import.meta.env.LICENSE_KEY_SECRET;
+  if (!secret) {
+    throw new Error('Missing required environment variable: LICENSE_KEY_SECRET');
   }
-
-  // In production, verify the Paddle-Signature header
-  // See: https://developer.paddle.com/webhooks/signature-verification
-  return true;
+  return secret;
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  const rawBody = await request.text();
+  const webhookSecret = import.meta.env.PADDLE_WEBHOOK_SECRET || '';
+  const signature = request.headers.get('paddle-signature');
+
+  if (!verifyPaddleSignature(rawBody, signature, webhookSecret)) {
+    return json({ error: 'Invalid Paddle signature' }, 401);
+  }
+
+  let event: PaddleWebhookEvent;
+
   try {
-    const body = await request.text();
-    const data = JSON.parse(body);
+    event = JSON.parse(rawBody) as PaddleWebhookEvent;
+  } catch {
+    return json({ error: 'Invalid JSON payload' }, 400);
+  }
 
-    console.log('[PADDLE] Webhook received:', data.type);
+  if (event.type !== 'transaction.completed') {
+    return json({
+      ok: true,
+      ignored: true,
+      eventType: event.type ?? null,
+    });
+  }
 
-    // Verify signature
-    const isValid = await verifyWebhookSignature(request, body);
-    if (!isValid) {
-      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+  try {
+    const { email, orderId, plan, priceId } = extractTransactionDetails(event);
+
+    if (!email || !orderId) {
+      return json(
+        {
+          error: 'Missing transaction email or order id',
+        },
+        422,
+      );
     }
 
-    // Handle transaction completed event
-    if (data.type === 'transaction.completed') {
-      const transaction = data.data;
-      const email = transaction.customer?.email || transaction.customer_id;
-      const orderId = transaction.id;
-
-      // Determine the plan from the price ID
-      const priceId = transaction.items?.[0]?.price_id;
-      let plan: 'lifetime' | 'oneMonth' = 'oneMonth';
-
-      // Map Paddle price IDs to plans
-      const PRICE_IDS = {
-        lifetime: import.meta.env.PADDLE_PRICE_LIFETIME || '',
-        oneMonth: import.meta.env.PADDLE_PRICE_ONEMONTH || '',
-      };
-
-      if (priceId === PRICE_IDS.lifetime) plan = 'lifetime';
-      if (priceId === PRICE_IDS.oneMonth) plan = 'oneMonth';
-
-      // Generate license key
-      const licenseKey = generateLicenseKey();
-
-      // Store license
-      licenses.set(licenseKey, {
+    const authorizationCode = generateAuthorizationCode(
+      {
         email,
         orderId,
         plan,
-        createdAt: Date.now()
-      });
+      },
+      getLicenseSecret(),
+    );
 
-      console.log('[PADDLE] License created:', { email, orderId, plan, licenseKey });
-
-      // Send email (placeholder)
-      await sendLicenseEmail(email, licenseKey, plan);
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    const emailId = await sendLicenseEmail({
+      authorizationCode,
+      email,
+      orderId,
+      plan,
     });
 
+    return json({
+      ok: true,
+      orderId,
+      email,
+      plan,
+      priceId,
+      emailId: emailId ?? null,
+    });
   } catch (error) {
-    console.error('[PADDLE] Webhook error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error('[paddle-webhook] Failed to process webhook', error);
+    return json({ error: 'Webhook processing failed' }, 500);
   }
 };
 
-// Also export GET for verification endpoint
-export const GET: APIRoute = async ({ url }) => {
-  const licenseKey = url.searchParams.get('key');
-
-  if (!licenseKey) {
-    return new Response(JSON.stringify({ error: 'Missing license key' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-
-  const license = licenses.get(licenseKey.toUpperCase());
-
-  if (!license) {
-    return new Response(JSON.stringify({ valid: false, error: 'Invalid license key' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-
-  // Check expiration for one-month plan
-  let valid = true;
-  let expiresAt = null;
-
-  if (license.plan === 'oneMonth') {
-    expiresAt = license.createdAt + 30 * 24 * 60 * 60 * 1000;
-    valid = Date.now() < expiresAt;
-  }
-
-  return new Response(JSON.stringify({
-    valid,
-    plan: license.plan,
-    email: license.email,
-    orderId: license.orderId,
-    expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null
-  }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
+export const GET: APIRoute = async () =>
+  json({
+    ok: true,
+    endpoint: '/api/paddle-webhook',
   });
-};
