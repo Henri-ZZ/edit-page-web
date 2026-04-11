@@ -12,6 +12,13 @@ const paddleEnv = import.meta.env.PADDLE_ENVIRONMENT || import.meta.env.PUBLIC_P
 const paddleClientToken = import.meta.env.PADDLE_CLIENT_TOKEN || import.meta.env.PUBLIC_PADDLE_CLIENT_TOKEN || '';
 const paddlePriceLifetime =
   import.meta.env.PADDLE_PRICE_LIFETIME || import.meta.env.PUBLIC_PADDLE_PRICE_LIFETIME || '';
+const paddleConfig = {
+  environment: paddleEnv,
+  clientToken: paddleClientToken,
+  priceIds: {
+    lifetime: paddlePriceLifetime,
+  },
+};
 ---
 
 <!DOCTYPE html>
@@ -293,15 +300,9 @@ const paddlePriceLifetime =
     </div>
   </footer>
 
-  <script is:inline>
+  <script is:inline define:vars={{ paddleConfig }}>
     // Paddle Configuration
-    const PADDLE_CONFIG = {
-      environment: {JSON.stringify(paddleEnv)},
-      clientToken: {JSON.stringify(paddleClientToken)},
-      priceIds: {
-        lifetime: {JSON.stringify(paddlePriceLifetime)}
-      }
-    };
+    const PADDLE_CONFIG = paddleConfig;
 
     const isValidEnvironment =
       PADDLE_CONFIG.environment === 'sandbox' || PADDLE_CONFIG.environment === 'production';
