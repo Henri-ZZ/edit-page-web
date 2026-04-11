@@ -8,6 +8,9 @@ interface Props {
 
 const { lang = 'en', title = 'Edit Page' } = Astro.props;
 const t = translations[lang];
+const publicPaddleEnv = import.meta.env.PUBLIC_PADDLE_ENV || '';
+const publicPaddleClientToken = import.meta.env.PUBLIC_PADDLE_CLIENT_TOKEN || '';
+const publicPaddlePriceLifetime = import.meta.env.PUBLIC_PADDLE_PRICE_LIFETIME || '';
 ---
 
 <!DOCTYPE html>
@@ -291,41 +294,39 @@ const t = translations[lang];
 
   <script is:inline>
     // Paddle Configuration
-    const PADDLE_ENVIRONMENTS = {
-      sandbox: {
-        clientToken: 'test_b199863fe4c1ba4aee821473731',
-        priceIds: {
-          lifetime: 'pri_01knvyjwd2zs93wkqhb5xk9npg'
-        }
-      },
-      production: {
-        clientToken: 'live_4388271e25ce3173f9764070f47',
-        priceIds: {
-          lifetime: 'pri_01knvsqmajmgk7tfmzzq0sxzyb'
-        }
+    const PADDLE_CONFIG = {
+      environment: {JSON.stringify(publicPaddleEnv)},
+      clientToken: {JSON.stringify(publicPaddleClientToken)},
+      priceIds: {
+        lifetime: {JSON.stringify(publicPaddlePriceLifetime)}
       }
     };
 
-    // Auto-detect environment based on hostname
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const ACTIVE_ENVIRONMENT = isLocalhost ? 'sandbox' : 'production';
-    const envConfig = PADDLE_ENVIRONMENTS[ACTIVE_ENVIRONMENT];
-    console.log('Paddle environment:', ACTIVE_ENVIRONMENT, '(localhost:', isLocalhost, ')');
+    const isValidEnvironment =
+      PADDLE_CONFIG.environment === 'sandbox' || PADDLE_CONFIG.environment === 'production';
+
+    if (!isValidEnvironment || !PADDLE_CONFIG.clientToken || !PADDLE_CONFIG.priceIds.lifetime) {
+      console.error('Paddle public environment variables are incomplete', PADDLE_CONFIG);
+    }
 
     // Store config globally for other scripts
     window.EDIT_PAGE_PADDLE_CONFIG = {
-      clientToken: envConfig.clientToken,
-      environment: ACTIVE_ENVIRONMENT,
-      priceIds: envConfig.priceIds
+      clientToken: PADDLE_CONFIG.clientToken,
+      environment: PADDLE_CONFIG.environment,
+      priceIds: PADDLE_CONFIG.priceIds
     };
 
     // Wait for Paddle.js to load and initialize
     function initPaddle() {
+      if (!isValidEnvironment || !PADDLE_CONFIG.clientToken) {
+        return;
+      }
+
       if (window.Paddle) {
         console.log('Paddle loaded, initializing...');
-        Paddle.Environment.set(ACTIVE_ENVIRONMENT);
+        Paddle.Environment.set(PADDLE_CONFIG.environment);
         Paddle.Initialize({
-          token: envConfig.clientToken
+          token: PADDLE_CONFIG.clientToken
         });
         console.log('✅ Paddle initialized');
       } else {

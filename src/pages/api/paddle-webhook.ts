@@ -23,10 +23,26 @@ function getLicenseSecret() {
   return secret;
 }
 
+function getWebhookSecret() {
+  const secret = import.meta.env.PADDLE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('Missing required environment variable: PADDLE_WEBHOOK_SECRET');
+  }
+  return secret;
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const rawBody = await request.text();
-  const webhookSecret = import.meta.env.PADDLE_WEBHOOK_SECRET || '';
   const signature = request.headers.get('paddle-signature');
+
+  let webhookSecret: string;
+
+  try {
+    webhookSecret = getWebhookSecret();
+  } catch (error) {
+    console.error('[paddle-webhook] Missing webhook configuration', error);
+    return json({ error: 'Webhook configuration is incomplete' }, 500);
+  }
 
   if (!verifyPaddleSignature(rawBody, signature, webhookSecret)) {
     return json({ error: 'Invalid Paddle signature' }, 401);
