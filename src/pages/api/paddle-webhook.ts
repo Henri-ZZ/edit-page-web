@@ -56,15 +56,12 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ error: 'Invalid JSON payload' }, 400);
   }
 
-  console.log('[paddle-webhook] Received event', {
-    eventType: event.type ?? null,
-    eventId: event.event_id ?? event.notification_id ?? null,
-  });
+  console.log(
+    `[paddle-webhook] Received event type=${event.type ?? 'null'} id=${event.event_id ?? event.notification_id ?? 'null'}`,
+  );
 
   if (event.type !== 'transaction.completed') {
-    console.log('[paddle-webhook] Ignoring unsupported event type', {
-      eventType: event.type ?? null,
-    });
+    console.log(`[paddle-webhook] Ignoring unsupported event type=${event.type ?? 'null'}`);
     return json({
       ok: true,
       ignored: true,
@@ -75,18 +72,14 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const { email, orderId, plan, priceId } = extractTransactionDetails(event);
 
-    console.log('[paddle-webhook] Extracted transaction details', {
-      orderId: orderId ?? null,
-      email: email ?? null,
-      plan,
-      priceId: priceId ?? null,
-    });
+    console.log(
+      `[paddle-webhook] Extracted transaction details orderId=${orderId ?? 'null'} email=${email ?? 'null'} plan=${plan} priceId=${priceId ?? 'null'}`,
+    );
 
     if (!email || !orderId) {
-      console.error('[paddle-webhook] Missing required transaction fields', {
-        orderId: orderId ?? null,
-        email: email ?? null,
-      });
+      console.error(
+        `[paddle-webhook] Missing required transaction fields orderId=${orderId ?? 'null'} email=${email ?? 'null'}`,
+      );
       return json(
         {
           error: 'Missing transaction email or order id',
@@ -104,11 +97,9 @@ export const POST: APIRoute = async ({ request }) => {
       getLicenseSecret(),
     );
 
-    console.log('[paddle-webhook] Generated authorization code', {
-      orderId,
-      email,
-      plan,
-    });
+    console.log(
+      `[paddle-webhook] Generated authorization code orderId=${orderId} email=${email} plan=${plan}`,
+    );
 
     const emailId = await sendLicenseEmail({
       authorizationCode,
@@ -117,11 +108,9 @@ export const POST: APIRoute = async ({ request }) => {
       plan,
     });
 
-    console.log('[paddle-webhook] License email sent', {
-      orderId,
-      email,
-      emailId: emailId ?? null,
-    });
+    console.log(
+      `[paddle-webhook] License email sent orderId=${orderId} email=${email} emailId=${emailId ?? 'null'}`,
+    );
 
     return json({
       ok: true,
