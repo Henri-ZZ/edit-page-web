@@ -62,6 +62,14 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
   const from = getRequiredEnv('RESEND_FROM_EMAIL');
   const replyTo = import.meta.env.RESEND_REPLY_TO || undefined;
 
+  console.log('[resend] Sending authorization email', {
+    to: input.email,
+    orderId: input.orderId,
+    plan: input.plan,
+    from,
+    hasReplyTo: Boolean(replyTo),
+  });
+
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -81,9 +89,20 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error('[resend] Request failed', {
+      status: response.status,
+      errorText,
+      orderId: input.orderId,
+      to: input.email,
+    });
     throw new Error(`Resend request failed (${response.status}): ${errorText}`);
   }
 
   const result = await response.json();
+  console.log('[resend] Email accepted by Resend', {
+    id: result.id ?? null,
+    orderId: input.orderId,
+    to: input.email,
+  });
   return result.id as string | undefined;
 }
