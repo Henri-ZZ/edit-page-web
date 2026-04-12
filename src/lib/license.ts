@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto';
 
 export type LicensePlan = 'lifetime' | 'custom';
+export type LicenseLocale = 'en' | 'zh';
 
 type AuthorizationCodeInput = {
   email: string;
@@ -14,12 +15,12 @@ function toGroupedCode(value: string) {
   return chunks.join('-');
 }
 
-export function getPlanLabel(plan: LicensePlan) {
+export function getPlanLabel(plan: LicensePlan, locale: LicenseLocale = 'en') {
   switch (plan) {
     case 'lifetime':
-      return 'Lifetime';
+      return locale === 'zh' ? '永久授权' : 'Perpetual License';
     default:
-      return 'Custom';
+      return locale === 'zh' ? '自定义授权' : 'Custom License';
   }
 }
 

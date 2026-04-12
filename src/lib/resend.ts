@@ -1,4 +1,4 @@
-import { getPlanLabel, type LicensePlan } from '@/lib/license';
+import { getPlanLabel, type LicenseLocale, type LicensePlan } from '@/lib/license';
 
 type SendLicenseEmailInput = {
   authorizationCode: string;
@@ -79,9 +79,13 @@ function getEmailCopy(input: SendLicenseEmailInput): EmailCopy {
   };
 }
 
+function getEmailLocale(input: SendLicenseEmailInput): LicenseLocale {
+  return input.currencyCode === 'CNY' ? 'zh' : 'en';
+}
+
 function buildEmailHtml(input: SendLicenseEmailInput) {
   const copy = getEmailCopy(input);
-  const planLabel = getPlanLabel(input.plan);
+  const planLabel = getPlanLabel(input.plan, getEmailLocale(input));
   const code = escapeHtml(input.authorizationCode);
   const email = escapeHtml(input.email);
   const orderId = escapeHtml(input.orderId);
@@ -120,7 +124,7 @@ function buildEmailText(input: SendLicenseEmailInput) {
     '',
     `${copy.productLabel}: ${copy.productName}`,
     `${copy.deliveredToLabel}: ${input.email}`,
-    `${copy.planLabel}: ${getPlanLabel(input.plan)}`,
+    `${copy.planLabel}: ${getPlanLabel(input.plan, getEmailLocale(input))}`,
     `${copy.orderLabel}: ${input.orderId}`,
     `${copy.codeLabel}: ${input.authorizationCode}`,
     '',
