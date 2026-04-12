@@ -35,6 +35,13 @@ export type PaddleWebhookEvent = {
   data?: PaddleTransactionData | null;
 };
 
+type PaddleCustomerResponse = {
+  data?: {
+    email?: string | null;
+    id?: string | null;
+  } | null;
+};
+
 function parseSignatureHeader(header: string): PaddleSignatureParts | null {
   const pairs = header.split(';').map((part) => part.trim());
   const timestampValue = pairs.find((part) => part.startsWith('ts='))?.slice(3);
@@ -108,13 +115,37 @@ export function extractTransactionDetails(event: PaddleWebhookEvent) {
   const transaction = event.data;
   const orderId = transaction?.id?.trim();
   const email = transaction?.customer?.email?.trim().toLowerCase();
+  const customerId = transaction?.customer_id?.trim() ?? null;
   const priceId = transaction?.items?.[0]?.price_id ?? transaction?.items?.[0]?.price?.id ?? null;
   const plan = resolvePlanFromPriceId(priceId);
 
   return {
     orderId,
     email,
+    customerId,
     priceId,
     plan,
   };
+}
+
+export async function fetchCustomerEmail(customerId: string) {
+  const apiKey = import.meta.env.PADDLE_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing required environment variable: PADDLE_API_KEY');
+  }
+
+  const response = await fetch(`https://api.paddle.com/customers/${customerId}`, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Paddle customer lookup failed (${response.status}): ${errorText}`);
+  }
+
+  const result = (await response.json()) as PaddleCustomerResponse;
+  return result.data?.email?.trim().toLowerCase() ?? null;
 }

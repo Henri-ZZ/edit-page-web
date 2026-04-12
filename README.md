@@ -15,6 +15,7 @@ npm run dev
 2. 在 Vercel 导入项目
 3. 在 Vercel 的 `Settings > General` 里把 `Node.js Version` 设为 `20.x`
 4. 在 Vercel 的 `Settings > Environment Variables` 配置环境变量：
+    - `PADDLE_API_KEY`
     - `PADDLE_WEBHOOK_SECRET`
     - `PADDLE_ENVIRONMENT`
     - `PADDLE_CLIENT_TOKEN`
@@ -30,6 +31,8 @@ npm run dev
 
 - `PADDLE_WEBHOOK_SECRET`
   填 Paddle Sandbox webhook endpoint 对应的 signing secret，通常形如 `pdl_ntfset_...`
+- `PADDLE_API_KEY`
+  填 Paddle 后端 API key，供 webhook 通过 `customer_id` 查询 customer email。必须是服务端 key，通常形如 `pdl_sdbx_apikey_...`
 - `PADDLE_ENVIRONMENT`
   Preview 环境填 `sandbox`，将来正式环境填 `production`
 - `PADDLE_CLIENT_TOKEN`

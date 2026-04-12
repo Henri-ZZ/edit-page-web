@@ -14,6 +14,7 @@ function json(data: unknown, status = 200) {
 export const GET: APIRoute = async () =>
   json({
     env: import.meta.env.PADDLE_ENVIRONMENT ?? null,
+    hasPaddleApiKey: Boolean(import.meta.env.PADDLE_API_KEY),
     hasPaddleClientToken: Boolean(import.meta.env.PADDLE_CLIENT_TOKEN),
     hasPaddleWebhookSecret: Boolean(import.meta.env.PADDLE_WEBHOOK_SECRET),
     paddlePriceLifetime: import.meta.env.PADDLE_PRICE_LIFETIME ?? null,

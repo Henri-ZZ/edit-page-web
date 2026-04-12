@@ -1,7 +1,12 @@
 import type { APIRoute } from 'astro';
 
 import { generateAuthorizationCode } from '@/lib/license';
-import { extractTransactionDetails, verifyPaddleSignature, type PaddleWebhookEvent } from '@/lib/paddle';
+import {
+  extractTransactionDetails,
+  fetchCustomerEmail,
+  verifyPaddleSignature,
+  type PaddleWebhookEvent,
+} from '@/lib/paddle';
 import { sendLicenseEmail } from '@/lib/resend';
 
 export const prerender = false;
@@ -72,10 +77,11 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const { email, orderId, plan, priceId } = extractTransactionDetails(event);
+    const { email: payloadEmail, customerId, orderId, plan, priceId } = extractTransactionDetails(event);
+    const email = payloadEmail ?? (customerId ? await fetchCustomerEmail(customerId) : null);
 
     console.log(
-      `[paddle-webhook] Extracted transaction details orderId=${orderId ?? 'null'} email=${email ?? 'null'} plan=${plan} priceId=${priceId ?? 'null'}`,
+      `[paddle-webhook] Extracted transaction details orderId=${orderId ?? 'null'} email=${email ?? 'null'} customerId=${customerId ?? 'null'} plan=${plan} priceId=${priceId ?? 'null'}`,
     );
 
     if (!email || !orderId) {
