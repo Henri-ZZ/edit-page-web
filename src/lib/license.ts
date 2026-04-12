@@ -10,9 +10,13 @@ type AuthorizationCodeInput = {
 };
 
 function toGroupedCode(value: string) {
-  const normalized = value.replace(/[^A-Z0-9]/g, '').toUpperCase().slice(0, 20);
+  const normalized = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
   const chunks = normalized.match(/.{1,5}/g) ?? [];
   return chunks.join('-');
+}
+
+export function normalizeAuthorizationCode(code: string) {
+  return toGroupedCode(code);
 }
 
 export function getPlanLabel(plan: LicensePlan, locale: LicenseLocale = 'en') {
@@ -34,5 +38,5 @@ export function generateAuthorizationCode(
 }
 
 export function hashAuthorizationCode(code: string, secret: string) {
-  return createHmac('sha256', secret).update(code.trim().toUpperCase()).digest('hex');
+  return createHmac('sha256', secret).update(normalizeAuthorizationCode(code)).digest('hex');
 }
