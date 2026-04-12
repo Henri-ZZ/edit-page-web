@@ -1,1 +1,0 @@
-import"https://cdn.paddle.com/paddle/v2/paddle.js";

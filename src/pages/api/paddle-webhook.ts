@@ -1,7 +1,12 @@
 import type { APIRoute } from 'astro';
 
 import { generateAuthorizationCode } from '@/lib/license';
-import { extractTransactionDetails, verifyPaddleSignature, type PaddleWebhookEvent } from '@/lib/paddle';
+import {
+  extractTransactionDetails,
+  fetchCustomerEmail,
+  verifyPaddleSignature,
+  type PaddleWebhookEvent,
+} from '@/lib/paddle';
 import { sendLicenseEmail } from '@/lib/resend';
 
 export const prerender = false;
@@ -23,10 +28,26 @@ function getLicenseSecret() {
   return secret;
 }
 
+function getWebhookSecret() {
+  const secret = import.meta.env.PADDLE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('Missing required environment variable: PADDLE_WEBHOOK_SECRET');
+  }
+  return secret;
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const rawBody = await request.text();
-  const webhookSecret = import.meta.env.PADDLE_WEBHOOK_SECRET || '';
   const signature = request.headers.get('paddle-signature');
+
+  let webhookSecret: string;
+
+  try {
+    webhookSecret = getWebhookSecret();
+  } catch (error) {
+    console.error('[paddle-webhook] Missing webhook configuration', error);
+    return json({ error: 'Webhook configuration is incomplete' }, 500);
+  }
 
   if (!verifyPaddleSignature(rawBody, signature, webhookSecret)) {
     return json({ error: 'Invalid Paddle signature' }, 401);
@@ -40,18 +61,34 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ error: 'Invalid JSON payload' }, 400);
   }
 
-  if (event.type !== 'transaction.completed') {
+  const eventType = event.event_type ?? event.type ?? null;
+
+  console.log(
+    `[paddle-webhook] Received event type=${eventType ?? 'null'} id=${event.event_id ?? event.notification_id ?? 'null'}`,
+  );
+
+  if (eventType !== 'transaction.completed') {
+    console.log(`[paddle-webhook] Ignoring unsupported event type=${eventType ?? 'null'}`);
     return json({
       ok: true,
       ignored: true,
-      eventType: event.type ?? null,
+      eventType,
     });
   }
 
   try {
-    const { email, orderId, plan, priceId } = extractTransactionDetails(event);
+    const { email: payloadEmail, customerId, currencyCode, orderId, plan, priceId } =
+      extractTransactionDetails(event);
+    const email = payloadEmail ?? (customerId ? await fetchCustomerEmail(customerId) : null);
+
+    console.log(
+      `[paddle-webhook] Extracted transaction details orderId=${orderId ?? 'null'} email=${email ?? 'null'} customerId=${customerId ?? 'null'} plan=${plan} priceId=${priceId ?? 'null'} currencyCode=${currencyCode ?? 'null'}`,
+    );
 
     if (!email || !orderId) {
+      console.error(
+        `[paddle-webhook] Missing required transaction fields orderId=${orderId ?? 'null'} email=${email ?? 'null'}`,
+      );
       return json(
         {
           error: 'Missing transaction email or order id',
@@ -69,12 +106,21 @@ export const POST: APIRoute = async ({ request }) => {
       getLicenseSecret(),
     );
 
+    console.log(
+      `[paddle-webhook] Generated authorization code orderId=${orderId} email=${email} plan=${plan}`,
+    );
+
     const emailId = await sendLicenseEmail({
       authorizationCode,
+      currencyCode,
       email,
       orderId,
       plan,
     });
+
+    console.log(
+      `[paddle-webhook] License email sent orderId=${orderId} email=${email} emailId=${emailId ?? 'null'}`,
+    );
 
     return json({
       ok: true,
