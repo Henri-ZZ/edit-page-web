@@ -138,6 +138,7 @@ export async function fetchCustomerEmail(customerId: string) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
+      'Paddle-Version': '1',
     },
   });
 
