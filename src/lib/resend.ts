@@ -1,10 +1,27 @@
-import { getPlanLabel, type LicensePlan } from '@/lib/license';
+import { getPlanLabel, type LicenseLocale, type LicensePlan } from '@/lib/license';
 
 type SendLicenseEmailInput = {
   authorizationCode: string;
+  currencyCode?: string | null;
   email: string;
   orderId: string;
   plan: LicensePlan;
+};
+
+type EmailCopy = {
+  codeLabel: string;
+  deliveredToLabel: string;
+  intro: string;
+  instruction: string;
+  orderLabel: string;
+  planLabel: string;
+  preheader: string;
+  productLabel: string;
+  productName: string;
+  receiptLabel: string;
+  subject: string;
+  support: string;
+  transactionalNote: string;
 };
 
 function getRequiredEnv(name: string) {
@@ -24,36 +41,96 @@ function escapeHtml(value: string) {
     .replaceAll("'", '&#39;');
 }
 
+function getEmailCopy(input: SendLicenseEmailInput): EmailCopy {
+  const isChinese = input.currencyCode === 'CNY';
+
+  if (isChinese) {
+    return {
+      codeLabel: '激活码',
+      deliveredToLabel: '收件邮箱',
+      intro: '您的 Edit Page Extension 购买已完成，以下是本次交易回执与授权信息。',
+      instruction: '请在 Edit Page extension 中输入此激活码完成激活。',
+      orderLabel: '订单号',
+      planLabel: '套餐',
+      preheader: '交易回执与激活码已生成，请妥善保存。',
+      productLabel: '产品',
+      productName: 'Edit Page Extension',
+      receiptLabel: '购买回执',
+      subject: 'Edit Page 购买回执与激活码',
+      support: '如需帮助，请直接回复此邮件，我们会尽快协助处理。',
+      transactionalNote: '此邮件为您最近一次购买的交易通知，不包含营销订阅内容。',
+    };
+  }
+
+  return {
+    codeLabel: 'License key',
+    deliveredToLabel: 'Delivered to',
+    intro: 'Your purchase of Edit Page Extension is complete. This email includes your receipt and license details.',
+    instruction: 'Enter this license key in the Edit Page extension to activate your purchase.',
+    orderLabel: 'Order ID',
+    planLabel: 'Plan',
+    preheader: 'Your purchase receipt and license key are ready.',
+    productLabel: 'Product',
+    productName: 'Edit Page Extension',
+    receiptLabel: 'Purchase receipt',
+    subject: 'Edit Page purchase receipt and license key',
+    support: 'If you need help, you can reply to this email and we will assist you.',
+    transactionalNote: 'This is a transactional message for your recent purchase. It is not a marketing email.',
+  };
+}
+
+function getEmailLocale(input: SendLicenseEmailInput): LicenseLocale {
+  return input.currencyCode === 'CNY' ? 'zh' : 'en';
+}
+
 function buildEmailHtml(input: SendLicenseEmailInput) {
-  const planLabel = getPlanLabel(input.plan);
+  const copy = getEmailCopy(input);
+  const planLabel = getPlanLabel(input.plan, getEmailLocale(input));
   const code = escapeHtml(input.authorizationCode);
+  const email = escapeHtml(input.email);
   const orderId = escapeHtml(input.orderId);
 
   return `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-      <h1 style="font-size: 20px; margin-bottom: 16px;">Your Edit Page authorization code</h1>
-      <p>Thanks for your purchase.</p>
-      <p><strong>Plan:</strong> ${planLabel}</p>
-      <p><strong>Order ID:</strong> ${orderId}</p>
-      <p style="margin: 24px 0;">
-        <span style="display: inline-block; font-size: 24px; letter-spacing: 1px; font-weight: 700; background: #f3f4f6; padding: 12px 16px; border-radius: 10px;">
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.65; color: #111827; max-width: 560px; margin: 0 auto; padding: 24px 16px;">
+      <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: transparent;">${copy.preheader}</div>
+      <p style="font-size: 14px; color: #6b7280; margin: 0 0 12px;">Edit Page</p>
+      <h1 style="font-size: 24px; margin: 0 0 8px; font-weight: 700;">${copy.receiptLabel}</h1>
+      <p style="margin: 0 0 20px;">${copy.intro}</p>
+      <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #ffffff; margin-bottom: 16px;">
+        <p style="margin: 0 0 8px;"><strong>${copy.productLabel}:</strong> ${copy.productName}</p>
+        <p style="margin: 0 0 8px;"><strong>${copy.planLabel}:</strong> ${planLabel}</p>
+        <p style="margin: 0 0 8px;"><strong>${copy.orderLabel}:</strong> ${orderId}</p>
+        <p style="margin: 0;"><strong>${copy.deliveredToLabel}:</strong> ${email}</p>
+      </div>
+      <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #ffffff;">
+        <p style="margin: 0 0 12px;"><strong>${copy.codeLabel}:</strong></p>
+        <div style="display: inline-block; font-size: 24px; letter-spacing: 1px; font-weight: 700; background: #f3f4f6; padding: 12px 16px; border-radius: 10px;">
           ${code}
-        </span>
-      </p>
-      <p>Enter this code in the Edit Page app or extension to activate your purchase.</p>
+        </div>
+      </div>
+      <p style="margin: 20px 0 8px;">${copy.instruction}</p>
+      <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">${copy.support}</p>
+      <p style="margin: 0; color: #9ca3af; font-size: 12px;">${copy.transactionalNote}</p>
     </div>
   `.trim();
 }
 
 function buildEmailText(input: SendLicenseEmailInput) {
+  const copy = getEmailCopy(input);
   return [
-    'Your Edit Page authorization code',
+    copy.receiptLabel,
     '',
-    `Plan: ${getPlanLabel(input.plan)}`,
-    `Order ID: ${input.orderId}`,
-    `Authorization Code: ${input.authorizationCode}`,
+    copy.intro,
     '',
-    'Enter this code in the Edit Page app or extension to activate your purchase.',
+    `${copy.productLabel}: ${copy.productName}`,
+    `${copy.deliveredToLabel}: ${input.email}`,
+    `${copy.planLabel}: ${getPlanLabel(input.plan, getEmailLocale(input))}`,
+    `${copy.orderLabel}: ${input.orderId}`,
+    `${copy.codeLabel}: ${input.authorizationCode}`,
+    '',
+    copy.instruction,
+    copy.support,
+    copy.transactionalNote,
   ].join('\n');
 }
 
@@ -72,15 +149,31 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
     body: JSON.stringify({
       from,
       to: [input.email],
-      subject: 'Your Edit Page authorization code',
+      subject: getEmailCopy(input).subject,
       html: buildEmailHtml(input),
       text: buildEmailText(input),
       ...(replyTo ? { replyTo } : {}),
     }),
   });
 
+  if (response.status === 409) {
+    const errorText = await response.text();
+    console.warn('[resend] Duplicate email request treated as success', {
+      orderId: input.orderId,
+      to: input.email,
+      errorText,
+    });
+    return `duplicate:${input.orderId}`;
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
+    console.error('[resend] Request failed', {
+      status: response.status,
+      errorText,
+      orderId: input.orderId,
+      to: input.email,
+    });
     throw new Error(`Resend request failed (${response.status}): ${errorText}`);
   }
 
