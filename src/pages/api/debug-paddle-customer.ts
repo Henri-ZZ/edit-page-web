@@ -14,6 +14,9 @@ function json(data: unknown, status = 200) {
 export const GET: APIRoute = async ({ url }) => {
   const customerId = url.searchParams.get('customer_id');
   const apiKey = import.meta.env.PADDLE_API_KEY;
+  const paddleEnvironment = import.meta.env.PADDLE_ENVIRONMENT;
+  const baseUrl =
+    paddleEnvironment === 'sandbox' ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
 
   if (!customerId) {
     return json({ error: 'Missing customer_id query param' }, 400);
@@ -23,7 +26,7 @@ export const GET: APIRoute = async ({ url }) => {
     return json({ error: 'Missing PADDLE_API_KEY' }, 500);
   }
 
-  const response = await fetch(`https://api.paddle.com/customers/${customerId}`, {
+  const response = await fetch(`${baseUrl}/customers/${customerId}`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
@@ -35,6 +38,8 @@ export const GET: APIRoute = async ({ url }) => {
 
   return json({
     customerId,
+    paddleEnvironment: paddleEnvironment ?? null,
+    baseUrl,
     ok: response.ok,
     status: response.status,
     body: text,

@@ -42,6 +42,12 @@ type PaddleCustomerResponse = {
   } | null;
 };
 
+function getPaddleApiBaseUrl() {
+  return import.meta.env.PADDLE_ENVIRONMENT === 'sandbox'
+    ? 'https://sandbox-api.paddle.com'
+    : 'https://api.paddle.com';
+}
+
 function parseSignatureHeader(header: string): PaddleSignatureParts | null {
   const pairs = header.split(';').map((part) => part.trim());
   const timestampValue = pairs.find((part) => part.startsWith('ts='))?.slice(3);
@@ -134,7 +140,7 @@ export async function fetchCustomerEmail(customerId: string) {
     throw new Error('Missing required environment variable: PADDLE_API_KEY');
   }
 
-  const response = await fetch(`https://api.paddle.com/customers/${customerId}`, {
+  const response = await fetch(`${getPaddleApiBaseUrl()}/customers/${customerId}`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
