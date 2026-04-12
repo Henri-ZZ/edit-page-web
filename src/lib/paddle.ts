@@ -21,6 +21,7 @@ type PaddleTransactionItem = {
 };
 
 type PaddleTransactionData = {
+  currency_code?: string | null;
   id?: string | null;
   customer_id?: string | null;
   customer?: PaddleCustomer | null;
@@ -122,10 +123,12 @@ export function extractTransactionDetails(event: PaddleWebhookEvent) {
   const orderId = transaction?.id?.trim();
   const email = transaction?.customer?.email?.trim().toLowerCase();
   const customerId = transaction?.customer_id?.trim() ?? null;
+  const currencyCode = transaction?.currency_code?.trim().toUpperCase() ?? null;
   const priceId = transaction?.items?.[0]?.price_id ?? transaction?.items?.[0]?.price?.id ?? null;
   const plan = resolvePlanFromPriceId(priceId);
 
   return {
+    currencyCode,
     orderId,
     email,
     customerId,

@@ -77,11 +77,12 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const { email: payloadEmail, customerId, orderId, plan, priceId } = extractTransactionDetails(event);
+    const { email: payloadEmail, customerId, currencyCode, orderId, plan, priceId } =
+      extractTransactionDetails(event);
     const email = payloadEmail ?? (customerId ? await fetchCustomerEmail(customerId) : null);
 
     console.log(
-      `[paddle-webhook] Extracted transaction details orderId=${orderId ?? 'null'} email=${email ?? 'null'} customerId=${customerId ?? 'null'} plan=${plan} priceId=${priceId ?? 'null'}`,
+      `[paddle-webhook] Extracted transaction details orderId=${orderId ?? 'null'} email=${email ?? 'null'} customerId=${customerId ?? 'null'} plan=${plan} priceId=${priceId ?? 'null'} currencyCode=${currencyCode ?? 'null'}`,
     );
 
     if (!email || !orderId) {
@@ -111,6 +112,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const emailId = await sendLicenseEmail({
       authorizationCode,
+      currencyCode,
       email,
       orderId,
       plan,
