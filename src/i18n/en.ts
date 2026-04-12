@@ -48,7 +48,7 @@ export default {
       },
       {
         title: '2. Usage License',
-        content: 'This browser extension is intended for personal non-commercial use only. Any commercial use, illegal use, or operations that violate website terms of service are prohibited.'
+        content: 'This browser extension is intended for personal non-commercial use only. Each purchased license may be activated on up to two devices at the same time. If you activate on a third device, the earliest activated device may be removed automatically. Any commercial use, illegal use, or operations that violate website terms of service are prohibited.'
       },
       {
         title: '3. User Responsibility',
