@@ -135,6 +135,16 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
     }),
   });
 
+  if (response.status === 409) {
+    const errorText = await response.text();
+    console.warn('[resend] Duplicate email request treated as success', {
+      orderId: input.orderId,
+      to: input.email,
+      errorText,
+    });
+    return `duplicate:${input.orderId}`;
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
     console.error('[resend] Request failed', {
