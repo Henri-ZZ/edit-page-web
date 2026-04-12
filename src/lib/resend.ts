@@ -9,14 +9,19 @@ type SendLicenseEmailInput = {
 };
 
 type EmailCopy = {
-  greeting: string;
+  codeLabel: string;
+  deliveredToLabel: string;
   intro: string;
   instruction: string;
   orderLabel: string;
   planLabel: string;
-  codeLabel: string;
+  preheader: string;
+  productLabel: string;
+  productName: string;
+  receiptLabel: string;
   subject: string;
   support: string;
+  transactionalNote: string;
 };
 
 function getRequiredEnv(name: string) {
@@ -41,26 +46,36 @@ function getEmailCopy(input: SendLicenseEmailInput): EmailCopy {
 
   if (isChinese) {
     return {
-      greeting: '您的 Edit Page 授权码',
-      intro: '感谢购买。以下是您的授权信息。',
+      codeLabel: '授权码',
+      deliveredToLabel: '收件邮箱',
+      intro: '您的 Edit Page Extension 购买已完成，以下是本次交易回执与授权信息。',
       instruction: '请在 Edit Page extension 中输入此授权码完成激活。',
       orderLabel: '订单号',
       planLabel: '套餐',
-      codeLabel: '授权码',
-      subject: '您的 Edit Page 授权码',
-      support: '如有问题，请直接回复此邮件。',
+      preheader: '交易回执与授权码已生成，请妥善保存。',
+      productLabel: '产品',
+      productName: 'Edit Page Extension',
+      receiptLabel: '购买回执',
+      subject: 'Edit Page 购买回执与授权码',
+      support: '如需帮助，请直接回复此邮件，我们会尽快协助处理。',
+      transactionalNote: '此邮件为您最近一次购买的交易通知，不包含营销订阅内容。',
     };
   }
 
   return {
-    greeting: 'Your Edit Page license code',
-    intro: 'Thanks for your purchase. Your license details are below.',
+    codeLabel: 'License code',
+    deliveredToLabel: 'Delivered to',
+    intro: 'Your purchase of Edit Page Extension is complete. This email includes your receipt and license details.',
     instruction: 'Enter this code in the Edit Page extension to activate your purchase.',
     orderLabel: 'Order ID',
     planLabel: 'Plan',
-    codeLabel: 'License code',
-    subject: 'Your Edit Page license code',
-    support: 'If you need help, you can reply to this email.',
+    preheader: 'Your purchase receipt and license code are ready.',
+    productLabel: 'Product',
+    productName: 'Edit Page Extension',
+    receiptLabel: 'Purchase receipt',
+    subject: 'Edit Page purchase receipt and license code',
+    support: 'If you need help, you can reply to this email and we will assist you.',
+    transactionalNote: 'This is a transactional message for your recent purchase. It is not a marketing email.',
   };
 }
 
@@ -68,23 +83,30 @@ function buildEmailHtml(input: SendLicenseEmailInput) {
   const copy = getEmailCopy(input);
   const planLabel = getPlanLabel(input.plan);
   const code = escapeHtml(input.authorizationCode);
+  const email = escapeHtml(input.email);
   const orderId = escapeHtml(input.orderId);
 
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.65; color: #111827; max-width: 560px; margin: 0 auto; padding: 24px 16px;">
+      <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: transparent;">${copy.preheader}</div>
       <p style="font-size: 14px; color: #6b7280; margin: 0 0 12px;">Edit Page</p>
-      <h1 style="font-size: 24px; margin: 0 0 16px; font-weight: 700;">${copy.greeting}</h1>
+      <h1 style="font-size: 24px; margin: 0 0 8px; font-weight: 700;">${copy.receiptLabel}</h1>
       <p style="margin: 0 0 20px;">${copy.intro}</p>
-      <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #ffffff;">
+      <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #ffffff; margin-bottom: 16px;">
+        <p style="margin: 0 0 8px;"><strong>${copy.productLabel}:</strong> ${copy.productName}</p>
         <p style="margin: 0 0 8px;"><strong>${copy.planLabel}:</strong> ${planLabel}</p>
         <p style="margin: 0 0 8px;"><strong>${copy.orderLabel}:</strong> ${orderId}</p>
+        <p style="margin: 0;"><strong>${copy.deliveredToLabel}:</strong> ${email}</p>
+      </div>
+      <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #ffffff;">
         <p style="margin: 0 0 12px;"><strong>${copy.codeLabel}:</strong></p>
         <div style="display: inline-block; font-size: 24px; letter-spacing: 1px; font-weight: 700; background: #f3f4f6; padding: 12px 16px; border-radius: 10px;">
           ${code}
         </div>
       </div>
       <p style="margin: 20px 0 8px;">${copy.instruction}</p>
-      <p style="margin: 0; color: #6b7280; font-size: 14px;">${copy.support}</p>
+      <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">${copy.support}</p>
+      <p style="margin: 0; color: #9ca3af; font-size: 12px;">${copy.transactionalNote}</p>
     </div>
   `.trim();
 }
@@ -92,16 +114,19 @@ function buildEmailHtml(input: SendLicenseEmailInput) {
 function buildEmailText(input: SendLicenseEmailInput) {
   const copy = getEmailCopy(input);
   return [
-    copy.greeting,
+    copy.receiptLabel,
     '',
     copy.intro,
     '',
+    `${copy.productLabel}: ${copy.productName}`,
+    `${copy.deliveredToLabel}: ${input.email}`,
     `${copy.planLabel}: ${getPlanLabel(input.plan)}`,
     `${copy.orderLabel}: ${input.orderId}`,
     `${copy.codeLabel}: ${input.authorizationCode}`,
     '',
     copy.instruction,
     copy.support,
+    copy.transactionalNote,
   ].join('\n');
 }
 
@@ -109,14 +134,6 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
   const apiKey = getRequiredEnv('RESEND_API_KEY');
   const from = getRequiredEnv('RESEND_FROM_EMAIL');
   const replyTo = import.meta.env.RESEND_REPLY_TO || undefined;
-
-  console.log('[resend] Sending authorization email', {
-    to: input.email,
-    orderId: input.orderId,
-    plan: input.plan,
-    from,
-    hasReplyTo: Boolean(replyTo),
-  });
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -157,10 +174,5 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
   }
 
   const result = await response.json();
-  console.log('[resend] Email accepted by Resend', {
-    id: result.id ?? null,
-    orderId: input.orderId,
-    to: input.email,
-  });
   return result.id as string | undefined;
 }

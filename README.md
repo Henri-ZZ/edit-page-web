@@ -44,7 +44,7 @@ npm run dev
 - `RESEND_API_KEY`
   填 Resend 后台生成的 API Key，通常形如 `re_...`
 - `RESEND_FROM_EMAIL`
-  填你在 Resend 已验证域名下的发件地址，比如 `Edit Page <noreply@mail.yourdomain.com>`
+  填你在 Resend 已验证域名下的发件地址，建议带显示名，比如 `Edit Page License <noreply@mail.yourdomain.com>`
 - `RESEND_REPLY_TO`
   可选，填你想接收用户回复的邮箱
 
