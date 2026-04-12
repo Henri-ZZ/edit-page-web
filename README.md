@@ -21,6 +21,7 @@ npm run dev
     - `PADDLE_CLIENT_TOKEN`
     - `PADDLE_PRICE_LIFETIME`
     - `LICENSE_KEY_SECRET`
+    - `POSTGRES_URL`
     - `RESEND_API_KEY`
     - `RESEND_FROM_EMAIL`
 5. 部署完成
@@ -41,6 +42,8 @@ npm run dev
   填 Paddle 里的 lifetime 价格 ID，前端 checkout 和 webhook 都会用这一个值
 - `LICENSE_KEY_SECRET`
   填一个你自己生成的长随机字符串，比如 `openssl rand -base64 32`
+- `POSTGRES_URL`
+  填 Vercel Marketplace Postgres 提供的连接串，建议直接用 Neon 集成自动注入的值
 - `RESEND_API_KEY`
   填 Resend 后台生成的 API Key，通常形如 `re_...`
 - `RESEND_FROM_EMAIL`
@@ -64,6 +67,15 @@ npm run dev
 1. 校验 `Paddle-Signature`
 2. 根据订单生成稳定的授权码
 3. 通过 Resend 邮件 API 发送给用户
+
+## License APIs
+
+项目额外提供两个给 extension 使用的接口：
+
+- `POST /api/license/activate`
+  首次激活授权码并绑定设备。每个授权码最多允许两台设备，超过时会自动挤掉最早激活的设备。
+- `POST /api/license/verify`
+  验证当前设备是否仍然处于已激活状态。
 
 ## 目录结构
 

@@ -14,6 +14,7 @@
   "dependencies": {
     "@astrojs/vercel": "^7.8.2",
     "@paddle/paddle-js": "^1.6.2",
-    "astro": "^4.0.0"
+    "astro": "^4.0.0",
+    "postgres": "^3.4.9"
   }
 }

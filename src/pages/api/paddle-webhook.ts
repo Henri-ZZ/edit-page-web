@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 
-import { generateAuthorizationCode } from '@/lib/license';
+import { generateAuthorizationCode, hashAuthorizationCode } from '@/lib/license';
+import { upsertLicense } from '@/lib/license-store';
 import {
   extractTransactionDetails,
   fetchCustomerEmail,
@@ -93,6 +94,14 @@ export const POST: APIRoute = async ({ request }) => {
       },
       getLicenseSecret(),
     );
+
+    await upsertLicense({
+      email,
+      licenseKeyHash: hashAuthorizationCode(authorizationCode, getLicenseSecret()),
+      orderId,
+      plan,
+      priceId,
+    });
 
     const emailId = await sendLicenseEmail({
       authorizationCode,

@@ -31,3 +31,7 @@ export function generateAuthorizationCode(
   const digest = createHmac('sha256', secret).update(payload).digest('base64url');
   return toGroupedCode(digest);
 }
+
+export function hashAuthorizationCode(code: string, secret: string) {
+  return createHmac('sha256', secret).update(code.trim().toUpperCase()).digest('hex');
+}

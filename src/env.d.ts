@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly LICENSE_KEY_SECRET?: string;
+  readonly POSTGRES_URL?: string;
   readonly PADDLE_API_KEY?: string;
   readonly PADDLE_CLIENT_TOKEN?: string;
   readonly PADDLE_ENVIRONMENT?: 'sandbox' | 'production';
