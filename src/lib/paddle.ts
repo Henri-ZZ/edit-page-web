@@ -29,6 +29,7 @@ type PaddleTransactionData = {
 
 export type PaddleWebhookEvent = {
   event_id?: string | null;
+  event_type?: string | null;
   notification_id?: string | null;
   type?: string | null;
   data?: PaddleTransactionData | null;

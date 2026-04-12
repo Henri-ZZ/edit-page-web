@@ -56,16 +56,18 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ error: 'Invalid JSON payload' }, 400);
   }
 
+  const eventType = event.event_type ?? event.type ?? null;
+
   console.log(
-    `[paddle-webhook] Received event type=${event.type ?? 'null'} id=${event.event_id ?? event.notification_id ?? 'null'}`,
+    `[paddle-webhook] Received event type=${eventType ?? 'null'} id=${event.event_id ?? event.notification_id ?? 'null'}`,
   );
 
-  if (event.type !== 'transaction.completed') {
-    console.log(`[paddle-webhook] Ignoring unsupported event type=${event.type ?? 'null'}`);
+  if (eventType !== 'transaction.completed') {
+    console.log(`[paddle-webhook] Ignoring unsupported event type=${eventType ?? 'null'}`);
     return json({
       ok: true,
       ignored: true,
-      eventType: event.type ?? null,
+      eventType,
     });
   }
 
