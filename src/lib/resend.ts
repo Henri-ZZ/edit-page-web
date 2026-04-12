@@ -46,34 +46,34 @@ function getEmailCopy(input: SendLicenseEmailInput): EmailCopy {
 
   if (isChinese) {
     return {
-      codeLabel: '授权码',
+      codeLabel: '激活码',
       deliveredToLabel: '收件邮箱',
       intro: '您的 Edit Page Extension 购买已完成，以下是本次交易回执与授权信息。',
-      instruction: '请在 Edit Page extension 中输入此授权码完成激活。',
+      instruction: '请在 Edit Page extension 中输入此激活码完成激活。',
       orderLabel: '订单号',
       planLabel: '套餐',
-      preheader: '交易回执与授权码已生成，请妥善保存。',
+      preheader: '交易回执与激活码已生成，请妥善保存。',
       productLabel: '产品',
       productName: 'Edit Page Extension',
       receiptLabel: '购买回执',
-      subject: 'Edit Page 购买回执与授权码',
+      subject: 'Edit Page 购买回执与激活码',
       support: '如需帮助，请直接回复此邮件，我们会尽快协助处理。',
       transactionalNote: '此邮件为您最近一次购买的交易通知，不包含营销订阅内容。',
     };
   }
 
   return {
-    codeLabel: 'License code',
+    codeLabel: 'License key',
     deliveredToLabel: 'Delivered to',
     intro: 'Your purchase of Edit Page Extension is complete. This email includes your receipt and license details.',
-    instruction: 'Enter this code in the Edit Page extension to activate your purchase.',
+    instruction: 'Enter this license key in the Edit Page extension to activate your purchase.',
     orderLabel: 'Order ID',
     planLabel: 'Plan',
-    preheader: 'Your purchase receipt and license code are ready.',
+    preheader: 'Your purchase receipt and license key are ready.',
     productLabel: 'Product',
     productName: 'Edit Page Extension',
     receiptLabel: 'Purchase receipt',
-    subject: 'Edit Page purchase receipt and license code',
+    subject: 'Edit Page purchase receipt and license key',
     support: 'If you need help, you can reply to this email and we will assist you.',
     transactionalNote: 'This is a transactional message for your recent purchase. It is not a marketing email.',
   };

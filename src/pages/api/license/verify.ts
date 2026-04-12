@@ -5,6 +5,12 @@ import { verifyLicense } from '@/lib/license-store';
 
 export const prerender = false;
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 type VerifyPayload = {
   deviceId?: string;
   extensionVersion?: string;
@@ -15,6 +21,7 @@ function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
+      ...corsHeaders,
       'Content-Type': 'application/json',
     },
   });
@@ -31,6 +38,12 @@ function getLicenseSecret() {
 function getClientIp(request: Request) {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
 }
+
+export const OPTIONS: APIRoute = async () =>
+  new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
 
 export const POST: APIRoute = async ({ request }) => {
   let payload: VerifyPayload;
