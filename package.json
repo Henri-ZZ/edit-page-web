@@ -9,7 +9,8 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "create:license": "node scripts/create-manual-license.mjs"
   },
   "dependencies": {
     "@astrojs/vercel": "^7.8.2",
