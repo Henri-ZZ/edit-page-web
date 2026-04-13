@@ -148,6 +148,7 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'Idempotency-Key': `edit-page-license-${input.orderId}`,
+      'User-Agent': 'edit-page-web/1.0',
     },
     body: JSON.stringify({
       from,
@@ -155,7 +156,7 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
       subject: getEmailCopy(input).subject,
       html: buildEmailHtml(input),
       text: buildEmailText(input),
-      ...(replyTo ? { reply_to: replyTo } : {}),
+      ...(replyTo ? { replyTo } : {}),
     }),
   });
 
