@@ -142,29 +142,44 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
   const from = getRequiredEnv('RESEND_FROM_EMAIL');
   const replyTo = import.meta.env.RESEND_REPLY_TO || undefined;
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'Idempotency-Key': `edit-page-license-${input.orderId}`,
-      'User-Agent': 'edit-page-web/1.0',
-    },
-    body: JSON.stringify({
-      from,
-      to: [input.email],
-      subject: getEmailCopy(input).subject,
-      html: buildEmailHtml(input),
-      text: buildEmailText(input),
-      ...(replyTo
-        ? {
-            headers: {
-              'Reply-To': replyTo,
-            },
-          }
-        : {}),
-    }),
-  });
+  const send = (includeReplyTo: boolean) =>
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `edit-page-license-${input.orderId}${includeReplyTo ? '' : '-fallback'}`,
+        'User-Agent': 'edit-page-web/1.0',
+      },
+      body: JSON.stringify({
+        from,
+        to: [input.email],
+        subject: getEmailCopy(input).subject,
+        html: buildEmailHtml(input),
+        text: buildEmailText(input),
+        ...(includeReplyTo && replyTo
+          ? {
+              headers: {
+                'Reply-To': replyTo,
+              },
+            }
+          : {}),
+      }),
+    });
+
+  let response = await send(Boolean(replyTo));
+
+  if (!response.ok && replyTo) {
+    const firstErrorText = await response.text();
+    console.warn('[resend] Reply-To rejected, retrying without Reply-To', {
+      status: response.status,
+      errorText: firstErrorText,
+      orderId: input.orderId,
+      replyTo,
+      to: input.email,
+    });
+    response = await send(false);
+  }
 
   if (response.status === 409) {
     const errorText = await response.text();
