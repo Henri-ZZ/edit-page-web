@@ -141,7 +141,6 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
   const apiKey = getRequiredEnv('RESEND_API_KEY');
   const from = getRequiredEnv('RESEND_FROM_EMAIL');
   const replyTo = import.meta.env.RESEND_REPLY_TO || undefined;
-
   const send = (includeReplyTo: boolean) =>
     fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -159,9 +158,7 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
         text: buildEmailText(input),
         ...(includeReplyTo && replyTo
           ? {
-              headers: {
-                'Reply-To': replyTo,
-              },
+              reply_to: [replyTo],
             }
           : {}),
       }),
