@@ -147,7 +147,6 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'Idempotency-Key': `edit-page-license-${input.orderId}${includeReplyTo ? '' : '-fallback'}`,
         'User-Agent': 'edit-page-web/1.0',
       },
       body: JSON.stringify({
@@ -176,16 +175,6 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
       to: input.email,
     });
     response = await send(false);
-  }
-
-  if (response.status === 409) {
-    const errorText = await response.text();
-    console.warn('[resend] Duplicate email request treated as success', {
-      orderId: input.orderId,
-      to: input.email,
-      errorText,
-    });
-    return `duplicate:${input.orderId}`;
   }
 
   if (!response.ok) {
