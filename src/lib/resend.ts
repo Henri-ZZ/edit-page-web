@@ -155,7 +155,7 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
       subject: getEmailCopy(input).subject,
       html: buildEmailHtml(input),
       text: buildEmailText(input),
-      ...(replyTo ? { replyTo } : {}),
+      ...(replyTo ? { reply_to: replyTo } : {}),
     }),
   });
 
