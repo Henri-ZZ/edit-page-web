@@ -71,7 +71,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     if (!result.ok) {
-      return json({ ok: false, reason: result.reason }, 404);
+      return json({ ok: false, reason: result.reason }, 200);
     }
 
     return json({
