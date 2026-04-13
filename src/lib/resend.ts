@@ -156,7 +156,13 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
       subject: getEmailCopy(input).subject,
       html: buildEmailHtml(input),
       text: buildEmailText(input),
-      ...(replyTo ? { reply_to: replyTo } : {}),
+      ...(replyTo
+        ? {
+            headers: {
+              'Reply-To': replyTo,
+            },
+          }
+        : {}),
     }),
   });
 
