@@ -8,10 +8,9 @@ interface Props {
 
 const { lang = 'en', title = 'Edit Page' } = Astro.props;
 const t = translations[lang];
-const paddleEnv = import.meta.env.PADDLE_ENVIRONMENT || import.meta.env.PUBLIC_PADDLE_ENV || '';
-const paddleClientToken = import.meta.env.PADDLE_CLIENT_TOKEN || import.meta.env.PUBLIC_PADDLE_CLIENT_TOKEN || '';
-const paddlePriceLifetime =
-  import.meta.env.PADDLE_PRICE_LIFETIME || import.meta.env.PUBLIC_PADDLE_PRICE_LIFETIME || '';
+const paddleEnv = import.meta.env.PADDLE_ENVIRONMENT || '';
+const paddleClientToken = import.meta.env.PADDLE_CLIENT_TOKEN || '';
+const paddlePriceLifetime = import.meta.env.PADDLE_PRICE_LIFETIME || '';
 const paddleConfig = {
   environment: paddleEnv,
   clientToken: paddleClientToken,
