@@ -20,9 +20,11 @@ type EmailCopy = {
   productName: string;
   receiptLabel: string;
   subject: string;
-  support: string;
+  supportPrefix: string;
   transactionalNote: string;
 };
+
+const SUPPORT_EMAIL = 'henrizhang@henri.ren';
 
 function getRequiredEnv(name: string) {
   const value = import.meta.env[name];
@@ -57,7 +59,7 @@ function getEmailCopy(input: SendLicenseEmailInput): EmailCopy {
       productName: 'Edit Page Extension',
       receiptLabel: '购买回执',
       subject: 'Edit Page 购买回执与激活码',
-      support: '如需帮助，请直接回复此邮件，我们会尽快协助处理。',
+      supportPrefix: '如需帮助，您可以直接回复此邮件，或发送邮件至',
       transactionalNote: '此邮件为您最近一次购买的交易通知，不包含营销订阅内容。',
     };
   }
@@ -74,7 +76,7 @@ function getEmailCopy(input: SendLicenseEmailInput): EmailCopy {
     productName: 'Edit Page Extension',
     receiptLabel: 'Purchase receipt',
     subject: 'Edit Page purchase receipt and license key',
-    support: 'If you need help, you can reply to this email and we will assist you.',
+    supportPrefix: 'If you need help, you can reply to this email or email',
     transactionalNote: 'This is a transactional message for your recent purchase. It is not a marketing email.',
   };
 }
@@ -89,6 +91,7 @@ function buildEmailHtml(input: SendLicenseEmailInput) {
   const code = escapeHtml(input.authorizationCode);
   const email = escapeHtml(input.email);
   const orderId = escapeHtml(input.orderId);
+  const supportEmail = escapeHtml(SUPPORT_EMAIL);
 
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.65; color: #111827; max-width: 560px; margin: 0 auto; padding: 24px 16px;">
@@ -109,7 +112,7 @@ function buildEmailHtml(input: SendLicenseEmailInput) {
         </div>
       </div>
       <p style="margin: 20px 0 8px;">${copy.instruction}</p>
-      <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">${copy.support}</p>
+      <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">${copy.supportPrefix} <a href="mailto:${supportEmail}" style="color: #2563eb; text-decoration: underline;">${supportEmail}</a>.</p>
       <p style="margin: 0; color: #9ca3af; font-size: 12px;">${copy.transactionalNote}</p>
     </div>
   `.trim();
@@ -129,7 +132,7 @@ function buildEmailText(input: SendLicenseEmailInput) {
     `${copy.codeLabel}: ${input.authorizationCode}`,
     '',
     copy.instruction,
-    copy.support,
+    `${copy.supportPrefix} ${SUPPORT_EMAIL}.`,
     copy.transactionalNote,
   ].join('\n');
 }
@@ -138,32 +141,40 @@ export async function sendLicenseEmail(input: SendLicenseEmailInput) {
   const apiKey = getRequiredEnv('RESEND_API_KEY');
   const from = getRequiredEnv('RESEND_FROM_EMAIL');
   const replyTo = import.meta.env.RESEND_REPLY_TO || undefined;
-
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'Idempotency-Key': `edit-page-license-${input.orderId}`,
-    },
-    body: JSON.stringify({
-      from,
-      to: [input.email],
-      subject: getEmailCopy(input).subject,
-      html: buildEmailHtml(input),
-      text: buildEmailText(input),
-      ...(replyTo ? { replyTo } : {}),
-    }),
-  });
-
-  if (response.status === 409) {
-    const errorText = await response.text();
-    console.warn('[resend] Duplicate email request treated as success', {
-      orderId: input.orderId,
-      to: input.email,
-      errorText,
+  const send = (includeReplyTo: boolean) =>
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'edit-page-web/1.0',
+      },
+      body: JSON.stringify({
+        from,
+        to: [input.email],
+        subject: getEmailCopy(input).subject,
+        html: buildEmailHtml(input),
+        text: buildEmailText(input),
+        ...(includeReplyTo && replyTo
+          ? {
+              reply_to: [replyTo],
+            }
+          : {}),
+      }),
     });
-    return `duplicate:${input.orderId}`;
+
+  let response = await send(Boolean(replyTo));
+
+  if (!response.ok && replyTo) {
+    const firstErrorText = await response.text();
+    console.warn('[resend] Reply-To rejected, retrying without Reply-To', {
+      status: response.status,
+      errorText: firstErrorText,
+      orderId: input.orderId,
+      replyTo,
+      to: input.email,
+    });
+    response = await send(false);
   }
 
   if (!response.ok) {
