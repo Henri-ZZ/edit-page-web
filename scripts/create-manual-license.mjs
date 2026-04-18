@@ -1,6 +1,8 @@
 import { createHmac } from 'node:crypto';
 import postgres from 'postgres';
 
+const CONNECT_TIMEOUT_SECONDS = 10;
+
 function usage() {
   console.log(
     'Usage: npm run create:license -- <email> [--order-id=manual_xxx] [--plan=lifetime] [--price-id=pri_xxx]',
@@ -21,6 +23,35 @@ function generateAuthorizationCode({ email, orderId, plan }, secret) {
 
 function hashAuthorizationCode(code, secret) {
   return createHmac('sha256', secret).update(toGroupedCode(code)).digest('hex');
+}
+
+function getDatabaseConfig() {
+  const explicitUrl = process.env.POSTGRES_URL;
+  if (explicitUrl) {
+    return {
+      url: explicitUrl,
+      source: 'POSTGRES_URL',
+    };
+  }
+
+  const nonPoolingUrl = process.env.POSTGRES_URL_NON_POOLING || process.env.DATABASE_URL_UNPOOLED;
+  if (nonPoolingUrl) {
+    return {
+      url: nonPoolingUrl,
+      source: process.env.POSTGRES_URL_NON_POOLING ? 'POSTGRES_URL_NON_POOLING' : 'DATABASE_URL_UNPOOLED',
+    };
+  }
+
+  return null;
+}
+
+function maskDatabaseUrl(value) {
+  try {
+    const url = new URL(value);
+    return `${url.protocol}//${url.hostname}:${url.port || '(default)'}${url.pathname}`;
+  } catch {
+    return '(unparseable connection string)';
+  }
 }
 
 const [, , emailArg, ...restArgs] = process.argv;
@@ -44,11 +75,12 @@ const orderId = options['order-id'] || `manual_${Date.now()}`;
 const plan = options.plan || 'lifetime';
 const priceId = options['price-id'] || null;
 
-const databaseUrl = process.env.POSTGRES_URL;
+const databaseConfig = getDatabaseConfig();
 const secret = process.env.LICENSE_KEY_SECRET;
 
-if (!databaseUrl) {
-  console.error('Missing POSTGRES_URL');
+if (!databaseConfig) {
+  console.error('Missing database connection string.');
+  console.error('Please provide one of: POSTGRES_URL, POSTGRES_URL_NON_POOLING, or DATABASE_URL_UNPOOLED');
   process.exit(1);
 }
 
@@ -64,9 +96,22 @@ if (!['lifetime', 'custom'].includes(plan)) {
 
 const authorizationCode = generateAuthorizationCode({ email, orderId, plan }, secret);
 const licenseKeyHash = hashAuthorizationCode(authorizationCode, secret);
-const sql = postgres(databaseUrl, { prepare: false });
+console.log(`[create-license] Using database from ${databaseConfig.source}`);
+console.log(`[create-license] Target: ${maskDatabaseUrl(databaseConfig.url)}`);
+console.log(`[create-license] Connecting to database...`);
+
+const sql = postgres(databaseConfig.url, {
+  connect_timeout: CONNECT_TIMEOUT_SECONDS,
+  idle_timeout: 5,
+  max: 1,
+  prepare: false,
+  ssl: 'require',
+});
 
 try {
+  await sql`select 1`;
+  console.log('[create-license] Connected');
+
   await sql`
     create table if not exists licenses (
       id bigserial primary key,
@@ -112,6 +157,7 @@ try {
       last_emailed_at = now()
   `;
 
+  console.log('[create-license] License record upserted');
   console.log(JSON.stringify({
     email,
     orderId,
@@ -119,6 +165,13 @@ try {
     priceId,
     licenseKey: authorizationCode,
   }, null, 2));
+} catch (error) {
+  console.error('[create-license] Failed to create license');
+  if (error?.code === 'CONNECT_TIMEOUT') {
+    console.error('[create-license] Database connection timed out.');
+    console.error('[create-license] Try the Vercel POSTGRES_URL first. If that fails, try POSTGRES_URL_NON_POOLING or DATABASE_URL_UNPOOLED.');
+  }
+  throw error;
 } finally {
   await sql.end({ timeout: 5 });
 }

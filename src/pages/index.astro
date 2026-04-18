@@ -4,6 +4,7 @@ import { translations } from '@/i18n/ui';
 
 const lang = 'en';
 const t = translations[lang];
+const chromeWebStoreUrl = 'https://chromewebstore.google.com/detail/edit-page/edjbgblhciojhakodeflnpampekciifl';
 ---
 
 <BaseLayout lang={lang} title="Edit Page - Edit any webpage">
@@ -12,7 +13,7 @@ const t = translations[lang];
       <h1>{t.hero.title}</h1>
       <p class="subtitle">{t.hero.subtitle}</p>
       <p class="description">{t.hero.description}</p>
-      <a href="https://chrome.google.com/webstore" class="cta-button" target="_blank">{t.hero.cta}</a>
+      <a href={chromeWebStoreUrl} class="cta-button" target="_blank" rel="noopener noreferrer">{t.hero.cta}</a>
     </div>
   </section>
 
