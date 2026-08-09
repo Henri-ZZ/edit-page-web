@@ -75,12 +75,28 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const { email: payloadEmail, customerId, currencyCode, orderId, plan, priceId } =
       extractTransactionDetails(event);
-    const email = payloadEmail ?? (customerId ? await fetchCustomerEmail(customerId) : null);
+
+    let email = payloadEmail;
+
+    if (!email && customerId) {
+      try {
+        email = await fetchCustomerEmail(customerId);
+      } catch (lookupError) {
+        console.error('[paddle-webhook] Customer email lookup failed', {
+          customerId,
+          orderId,
+          error: lookupError instanceof Error ? lookupError.message : String(lookupError),
+        });
+      }
+    }
 
     if (!email || !orderId) {
       return json(
         {
           error: 'Missing transaction email or order id',
+          hasEmail: Boolean(email),
+          hasOrderId: Boolean(orderId),
+          customerId: customerId ?? null,
         },
         422,
       );
@@ -121,7 +137,11 @@ export const POST: APIRoute = async ({ request }) => {
     });
   } catch (error) {
     console.error('[paddle-webhook] Failed to process webhook', error);
-    return json({ error: 'Webhook processing failed' }, 500);
+    const message = error instanceof Error ? error.message : String(error);
+    return json(
+      { error: 'Webhook processing failed', detail: message },
+      500,
+    );
   }
 };
 
