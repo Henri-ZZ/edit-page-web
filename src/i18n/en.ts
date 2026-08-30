@@ -30,7 +30,7 @@ export default {
   },
   contact: {
     title: 'Contact Us',
-    email: 'Email: henriz@henri.ren'
+    email: 'Email: henri@henriz.dev'
   },
   footer: {
     terms: 'Terms of Service',

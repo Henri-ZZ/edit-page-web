@@ -49,7 +49,7 @@ npm run dev
 - `RESEND_FROM_EMAIL`
   填你在 Resend 已验证域名下的发件地址，建议带显示名，比如 `Edit Page Support <support@mail.yourdomain.com>`
 - `RESEND_REPLY_TO`
-  可选，填你想接收用户回复的邮箱，比如 `henriz@henri.ren`
+  可选，填你想接收用户回复的邮箱，比如 `henri@henriz.dev`
 
 建议：
 

@@ -24,7 +24,7 @@ type EmailCopy = {
   transactionalNote: string;
 };
 
-const SUPPORT_EMAIL = 'henriz@henri.ren';
+const SUPPORT_EMAIL = 'henri@henriz.dev';
 
 function getRequiredEnv(name: string) {
   const value = import.meta.env[name];

@@ -30,7 +30,7 @@ export default {
   },
   contact: {
     title: '联系我们',
-    email: '客服邮箱：henriz@henri.ren'
+    email: '客服邮箱：henri@henriz.dev'
   },
   footer: {
     terms: '服务条款',
