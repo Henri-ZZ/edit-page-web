@@ -107,5 +107,27 @@ export default {
         content: '支付相关数据由Paddle平台独立处理，遵循其隐私政策，本工具不获取任何支付相关信息。'
       }
     ]
+  },
+  contactPage: {
+    meta: '如有问题、反馈或需要帮助，请联系 Edit Page 团队。',
+    badge: '联系支持',
+    title: '我们随时为您提供帮助',
+    intro: '有问题、反馈或遇到困难？给我们留言，我们的团队会尽快回复您。',
+    emailTitle: '直接发送邮件',
+    emailDesc: '更习惯邮件，或表单无法加载？给我们发一封邮件。',
+    responseTitle: '响应时间',
+    responseDesc: '工作日期间，我们通常会在 24-48 小时内回复您的留言或邮件。',
+    formTitle: '给我们留言'
+  },
+  goodbye: {
+    meta: '告诉我们如何让 Edit Page 变得更好。',
+    badge: '简单道个别',
+    title: '感谢你体验 Edit Page。',
+    intro: '我们一直在努力改进，并致力于让网页编辑变得更简单、更快捷、更可靠。',
+    question: '可以花一点时间告诉我们，你为什么卸载 Edit Page 吗？',
+    questionDesc: '你的反馈将保持匿名，并帮助我们决定接下来应该改进什么。',
+    formTitle: 'Edit Page 卸载反馈',
+    changedMind: '改变主意了？',
+    reinstall: '重新安装 Edit Page'
   }
 };

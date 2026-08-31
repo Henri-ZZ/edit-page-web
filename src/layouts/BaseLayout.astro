@@ -1,349 +1,72 @@
 ---
 import { translations, type Language } from '@/i18n/ui';
-
-interface Props {
-  lang?: Language;
-  title?: string;
-}
-
-const { lang = 'en', title = 'Edit Page' } = Astro.props;
+import productIcon from '@/assets/edit-page-icon.svg';
+import { CHROME_STORE_URL } from '@/lib/store-links';
+interface Props { lang?: Language; title?: string; description?: string }
+const { lang = 'en', title = 'Edit Page', description = lang === 'zh' ? '直接在网页上编辑文字、更改图片、移除元素并截图。' : 'Edit text, change images, remove elements and capture screenshots on any webpage.' } = Astro.props;
 const t = translations[lang];
-const chromeWebStoreUrl = 'https://chromewebstore.google.com/detail/edit-page/edjbgblhciojhakodeflnpampekciifl';
-const paddleEnv = import.meta.env.PADDLE_ENVIRONMENT || '';
-const paddleClientToken = import.meta.env.PADDLE_CLIENT_TOKEN || '';
-const paddlePriceLifetime = import.meta.env.PADDLE_PRICE_LIFETIME || '';
-const paddleConfig = {
-  environment: paddleEnv,
-  clientToken: paddleClientToken,
-  priceIds: {
-    lifetime: paddlePriceLifetime,
-  },
-};
+const home = lang === 'en' ? '/' : '/zh/';
+const store = CHROME_STORE_URL;
+const paddleConfig = { environment: import.meta.env.PADDLE_ENVIRONMENT || '', clientToken: import.meta.env.PADDLE_CLIENT_TOKEN || '', priceIds: { lifetime: import.meta.env.PADDLE_PRICE_LIFETIME || '' } };
 ---
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang={lang}>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="xAcO-ctraDUIb4jND6iUlnNowsjS8EyMmHTllYHirZI">
-  <title>{title}</title>
-  <!-- Paddle.js -->
-  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content={description}><meta name="theme-color" content="#fff"><meta name="google-site-verification" content="xAcO-ctraDUIb4jND6iUlnNowsjS8EyMmHTllYHirZI"><link rel="icon" type="image/svg+xml" href={productIcon.src}><title>{title}</title>
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js" defer></script>
+  <script is:inline>
+    (function () {
+      var KEY = 'edit-page-lang';
+      var lang = document.documentElement.lang;
+      var url = new URL(location.href);
+      var isZh = url.pathname.indexOf('/zh') === 0;
+      var saved = null;
+      try { saved = localStorage.getItem(KEY); } catch (e) {}
+      var preferred;
+      if (saved === 'en' || saved === 'zh') { preferred = saved; }
+      else {
+        var nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        preferred = nav.indexOf('zh') === 0 ? 'zh' : 'en';
+      }
+      function targetFor(l) {
+        var p = url.pathname;
+        if (l === 'zh' && !isZh) { return (p === '/' ? '/zh/' : '/zh' + p) + url.search + url.hash; }
+        if (l === 'en' && isZh) { return (p === '/zh/' || p === '/zh' ? '/' : p.replace(/^\/zh/, '')) + url.search + url.hash; }
+        return null;
+      }
+      if (saved === null && preferred !== lang) {
+        var t = targetFor(preferred);
+        if (t) { try { localStorage.setItem(KEY, preferred); } catch (e) {} location.replace(t); return; }
+      }
+      function init() {
+        var sel = document.getElementById('locale-switcher');
+        if (!sel) return;
+        sel.value = lang;
+        sel.addEventListener('change', function () {
+          var next = sel.value;
+          try { localStorage.setItem(KEY, next); } catch (e) {}
+          var t = targetFor(next);
+          if (t) location.assign(t);
+        });
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+    })();
+  </script>
   <style is:global>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      line-height: 1.6;
-      color: #333;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-    nav {
-      padding: 20px 0;
-      border-bottom: 1px solid #eee;
-    }
-    .nav-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      text-decoration: none;
-    }
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-    .nav-links a {
-      color: #666;
-      text-decoration: none;
-    }
-    .nav-links a:hover {
-      color: #333;
-    }
-    .nav-links .cta-button {
-      color: white;
-    }
-    .lang-toggle {
-      background: none;
-      border: 1px solid #ddd;
-      padding: 5px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .hero {
-      padding: 50px 0;
-      text-align: center;
-    }
-    .hero h1 {
-      font-size: 36px;
-      margin-bottom: 8px;
-    }
-    .hero .subtitle {
-      font-size: 18px;
-      color: #666;
-      margin-bottom: 15px;
-    }
-    .hero .description {
-      font-size: 15px;
-      color: #666;
-      max-width: 600px;
-      margin: 0 auto 20px;
-    }
-    .cta-button {
-      display: inline-block;
-      background: #4285f4;
-      color: white;
-      padding: 10px 24px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-    }
-    .cta-button:hover {
-      background: #3367d6;
-    }
-    .features {
-      padding: 40px 0;
-      background: #f8f9fa;
-    }
-    .features h2 {
-      text-align: center;
-      font-size: 24px;
-      margin-bottom: 25px;
-    }
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    .feature-card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .feature-card h3 {
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-    .feature-card p {
-      color: #666;
-      font-size: 14px;
-    }
-    .pricing {
-      padding: 40px 0;
-    }
-    .pricing h2 {
-      text-align: center;
-      font-size: 24px;
-      margin-bottom: 25px;
-    }
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    .pricing-card {
-      background: white;
-      padding: 25px 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      text-align: center;
-      border: 2px solid #eee;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-    .pricing-card.featured {
-      border-color: #4285f4;
-    }
-    html[lang="zh"] .pricing-card.featured::before {
-      content: '推荐';
-    }
-    html[lang="en"] .pricing-card.featured::before {
-      content: 'Recommended';
-    }
-    .pricing-card.featured::before {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4285f4;
-      color: white;
-      padding: 4px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .pricing-card h3 {
-      font-size: 18px;
-      margin-bottom: 8px;
-    }
-    .pricing-card .price {
-      font-size: 28px;
-      font-weight: bold;
-      color: #4285f4;
-      margin: 12px 0;
-    }
-    .pricing-card p {
-      color: #666;
-      font-size: 14px;
-      flex-grow: 1;
-    }
-    .pricing-buy-button {
-      display: inline-block;
-      background: #4285f4;
-      color: white;
-      padding: 10px 24px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      margin-top: 15px;
-      border: none;
-      cursor: pointer;
-    }
-    .pricing-buy-button:hover {
-      background: #3367d6;
-    }
-    .pricing-buy-button.disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-    .browsers {
-      padding: 40px 0;
-      background: #f8f9fa;
-      text-align: center;
-    }
-    .browsers h2 {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-    .browsers p {
-      font-size: 15px;
-      color: #666;
-    }
-    .contact {
-      padding: 40px 0;
-      text-align: center;
-    }
-    .contact h2 {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-    .contact p {
-      font-size: 15px;
-      color: #666;
-    }
-    footer {
-      padding: 40px 0;
-      border-top: 1px solid #eee;
-      text-align: center;
-    }
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-bottom: 20px;
-    }
-    .footer-links a {
-      color: #666;
-      text-decoration: none;
-    }
-    .footer-links a:hover {
-      color: #333;
-    }
-    .copyright {
-      color: #999;
-      font-size: 14px;
-    }
+    :root{--ink:#0b1224;--muted:#687086;--line:#e6eaf2;--surface:#f6f8fc;--blue:#1769ff;--blue-dark:#0754e8;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);font-synthesis:none}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:92px}body{margin:0;min-width:320px;line-height:1.6;background:#fff}a{color:inherit}button,input{font:inherit}img,svg{display:block;max-width:100%}.container{width:min(1180px,calc(100% - 40px));margin-inline:auto}.site-header{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(226,231,241,.9);background:rgba(255,255,255,.88);backdrop-filter:blur(18px)}.nav-content{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:28px}.brand{display:inline-flex;align-items:center;gap:11px;font-size:20px;font-weight:800;letter-spacing:-.04em;text-decoration:none;white-space:nowrap}.brand-mark{width:34px;height:34px;object-fit:contain}.nav-links{display:flex;align-items:center;gap:32px;font-size:14px;font-weight:600}.nav-links>a{color:#3d4558;text-decoration:none}.nav-links>a:hover{color:var(--blue)}.nav-actions{display:flex;align-items:center;gap:12px}.lang-switch{position:relative;display:flex;align-items:center}.lang-switch svg{position:absolute;right:11px;top:50%;translate:0 -50%;pointer-events:none;color:#8a93a6}.locale-select{appearance:none;-webkit-appearance:none;height:38px;padding:0 32px 0 14px;border:1px solid #d7deeb;border-radius:999px;background:#fff;color:#3d4558;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:border-color .2s}.locale-select:hover{border-color:var(--blue)}.locale-select:focus{outline:3px solid rgba(23,105,255,.35);outline-offset:2px}.header-cta{padding:10px 17px;border-radius:10px;color:#fff;background:var(--blue);font-size:14px;font-weight:750;text-decoration:none;box-shadow:0 8px 22px rgba(23,105,255,.23)}.header-cta:hover{background:var(--blue-dark)}.site-footer{padding:42px 0 32px;border-top:1px solid var(--line)}.footer-main{display:flex;align-items:flex-start;justify-content:space-between;gap:36px}.footer-copy{margin:12px 0 0;color:var(--muted);font-size:13px}.footer-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:20px 28px}.footer-links a{color:#50586c;font-size:13px;text-decoration:none}.footer-links a:hover{color:var(--blue)}:focus-visible{outline:3px solid rgba(23,105,255,.35);outline-offset:3px}@media(max-width:800px){.nav-links{display:none}.nav-content{min-height:64px}.header-cta{padding:9px 12px}.lang-toggle{padding-inline:5px}.footer-main{flex-direction:column}.footer-links{justify-content:flex-start}}@media(max-width:480px){.container{width:min(100% - 28px,1180px)}.brand{font-size:18px}.brand-mark{width:31px;height:31px}.header-cta{font-size:12px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
   </style>
 </head>
 <body>
-  <nav>
-    <div class="container">
-      <div class="nav-content">
-        <a href={lang === 'en' ? '/' : '/zh/'} class="logo">Edit Page</a>
-        <div class="nav-links">
-          <a href={lang === 'en' ? '/' : '/zh/'}>{t.nav.home}</a>
-          <a href={chromeWebStoreUrl} class="cta-button" target="_blank" rel="noopener noreferrer">{t.nav.install}</a>
-          <a href={lang === 'en' ? '/zh/' : '/'} class="lang-toggle">
-            {lang === 'en' ? '中文' : 'EN'}
-          </a>
-        </div>
-      </div>
-    </div>
-  </nav>
-  <slot />
-  <footer>
-    <div class="container">
-      <div class="footer-links">
-        <a href={lang === 'en' ? '/terms' : '/zh/terms'}>{t.footer.terms}</a>
-        <a href={lang === 'en' ? '/refund' : '/zh/refund'}>{t.footer.refund}</a>
-        <a href={lang === 'en' ? '/privacy' : '/zh/privacy'}>{t.footer.privacy}</a>
-      </div>
-      <p class="copyright">{t.footer.copyright}</p>
-    </div>
-  </footer>
-
-  <script is:inline define:vars={{ paddleConfig }}>
-    // Paddle Configuration
-    const PADDLE_CONFIG = paddleConfig;
-
-    const isValidEnvironment =
-      PADDLE_CONFIG.environment === 'sandbox' || PADDLE_CONFIG.environment === 'production';
-
-    if (!isValidEnvironment || !PADDLE_CONFIG.clientToken || !PADDLE_CONFIG.priceIds.lifetime) {
-      console.error('Paddle public environment variables are incomplete', PADDLE_CONFIG);
-    }
-
-    // Store config globally for other scripts
-    window.EDIT_PAGE_PADDLE_CONFIG = {
-      clientToken: PADDLE_CONFIG.clientToken,
-      environment: PADDLE_CONFIG.environment,
-      priceIds: PADDLE_CONFIG.priceIds
-    };
-
-    // Wait for Paddle.js to load and initialize
-    function initPaddle() {
-      if (!isValidEnvironment || !PADDLE_CONFIG.clientToken) {
-        return;
-      }
-
-      if (window.Paddle) {
-        console.log('Paddle loaded, initializing...');
-        Paddle.Environment.set(PADDLE_CONFIG.environment);
-        Paddle.Initialize({
-          token: PADDLE_CONFIG.clientToken
-        });
-        console.log('✅ Paddle initialized');
-      } else {
-        console.log('Waiting for Paddle...');
-        setTimeout(initPaddle, 50);
-      }
-    }
-
-    // Start initialization when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPaddle);
-    } else {
-      initPaddle();
-    }
+  <header class="site-header"><nav class="container nav-content" aria-label={lang==='zh'?'主导航':'Main navigation'}><a class="brand" href={home}><img class="brand-mark" src={productIcon.src} width="34" height="34" alt=""><span>Edit Page</span></a><div class="nav-links"><a href={`${home}#features`}>{lang==='zh'?'功能':'Features'}</a><a href={`${home}#workflow`}>{lang==='zh'?'使用方法':'How it works'}</a><a href={`${home}#premium`}>Premium</a><a href={`${home}#faq`}>{lang==='zh'?'常见问题':'FAQ'}</a></div><div class="nav-actions"><a class="header-cta" href={store} data-install-link target="_blank" rel="noopener noreferrer">Install now</a><div class="lang-switch"><select id="locale-switcher" class="locale-select" aria-label={lang==='zh'?'切换语言':'Switch language'}><option value="en">English</option><option value="zh">中文</option></select><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></nav></header>
+  <main><slot /></main>
+  <footer class="site-footer"><div class="container footer-main"><div><a class="brand" href={home}>Edit Page</a><p class="footer-copy">{t.footer.copyright}</p></div><div class="footer-links"><a href={lang==='en'?'/terms':'/zh/terms'}>{t.footer.terms}</a><a href={lang==='en'?'/refund':'/zh/refund'}>{t.footer.refund}</a><a href={lang==='en'?'/privacy':'/zh/privacy'}>{t.footer.privacy}</a><a href={lang==='en'?'/contact':'/zh/contact'}>{lang==='zh'?'联系我们':'Contact'}</a></div></div></footer>
+  <script is:inline define:vars={{paddleConfig}}>window.EDIT_PAGE_PADDLE_CONFIG=paddleConfig;const init=()=>{if(['sandbox','production'].includes(paddleConfig.environment)&&paddleConfig.clientToken&&window.Paddle){Paddle.Environment.set(paddleConfig.environment);Paddle.Initialize({token:paddleConfig.clientToken})}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();</script>
+  <script>
+    import { getExtensionStoreUrl } from '@/lib/store-links';
+    const installUrl = getExtensionStoreUrl(navigator.userAgent || '');
+    document.querySelectorAll<HTMLAnchorElement>('[data-install-link]').forEach((link) => {
+      link.href = installUrl;
+    });
   </script>
-</body>
-</html>
+</body></html>

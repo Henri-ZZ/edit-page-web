@@ -107,5 +107,27 @@ export default {
         content: 'Payment-related data is independently processed by the Paddle platform in accordance with its privacy policy. This tool does not obtain any payment-related information.'
       }
     ]
+  },
+  contactPage: {
+    meta: 'Get in touch with the Edit Page team for questions, feedback, or support.',
+    badge: 'Contact Support',
+    title: "We're Here to Help",
+    intro: 'Have a question, feedback, or facing an issue? Send us a message and our team will get back to you as soon as possible.',
+    emailTitle: 'Email Us Directly',
+    emailDesc: 'Prefer email, or is the form not loading? Drop us a line.',
+    responseTitle: 'Response Time',
+    responseDesc: 'If needed, we typically respond to your message or email within 24-48 hours during business days.',
+    formTitle: 'Send us a message'
+  },
+  goodbye: {
+    meta: 'Tell us how we can make Edit Page better.',
+    badge: 'A quick goodbye',
+    title: 'Thanks for trying Edit Page.',
+    intro: "We're always trying to improve. We're always working to make webpage editing simpler, faster, and more reliable.",
+    question: 'Could you take a moment to tell us why you uninstalled Edit Page?',
+    questionDesc: 'Your feedback is anonymous and helps us decide what to improve next.',
+    formTitle: 'Edit Page uninstall feedback',
+    changedMind: 'Changed your mind?',
+    reinstall: 'Reinstall Edit Page'
   }
 };
