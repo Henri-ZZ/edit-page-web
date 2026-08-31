@@ -8,11 +8,56 @@ const t = translations[lang];
 const home = lang === 'en' ? '/' : '/zh/';
 const store = CHROME_STORE_URL;
 const paddleConfig = { environment: import.meta.env.PADDLE_ENVIRONMENT || '', clientToken: import.meta.env.PADDLE_CLIENT_TOKEN || '', priceIds: { lifetime: import.meta.env.PADDLE_PRICE_LIFETIME || '' } };
+const siteOrigin = Astro.site?.toString() || 'https://editpage.henriz.dev';
+const withSlash = (p: string) => (p === '' || p.endsWith('/') ? p || '/' : p + '/');
+const currentPath = Astro.url.pathname;
+const canonicalPath = withSlash(currentPath);
+const enPath = withSlash(currentPath.replace(/^\/zh/, '') || '/');
+const zhPath = currentPath.startsWith('/zh') ? canonicalPath : withSlash('/zh' + (currentPath === '/' ? '' : currentPath));
+const canonicalUrl = new URL(canonicalPath, siteOrigin).toString();
+const enUrl = new URL(enPath, siteOrigin).toString();
+const zhUrl = new URL(zhPath, siteOrigin).toString();
+const ogImage = new URL('/promo-images/Edit_Page_Marquee_Promo_Tile_1400x560.png', siteOrigin).toString();
+const ogLocale = lang === 'zh' ? 'zh_CN' : 'en_US';
+const twitterTitle = title === 'Edit Page' ? 'Edit Page — Edit any webpage' : title;
+const gaId = import.meta.env.GA_ID || 'G-THGJCGLVY5';
 ---
 <!doctype html>
 <html lang={lang}>
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content={description}><meta name="theme-color" content="#fff"><meta name="google-site-verification" content="xAcO-ctraDUIb4jND6iUlnNowsjS8EyMmHTllYHirZI"><link rel="icon" type="image/svg+xml" href={productIcon.src}><title>{title}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <meta name="description" content={description}>
+    <meta name="theme-color" content="#fff">
+    <meta name="google-site-verification" content="xAcO-ctraDUIb4jND6iUlnNowsjS8EyMmHTllYHirZI">
+    <link rel="canonical" href={canonicalUrl}>
+    <link rel="alternate" type="text/html" hreflang="en-US" href={enUrl}>
+    <link rel="alternate" type="text/html" hreflang="zh-CN" href={zhUrl}>
+    <link rel="alternate" type="text/html" hreflang="x-default" href={enUrl}>
+    <link rel="icon" type="image/svg+xml" href={productIcon.src}>
+    <meta property="og:site_name" content="Edit Page">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content={title}>
+    <meta property="og:description" content={description}>
+    <meta property="og:url" content={canonicalUrl}>
+    <meta property="og:image" content={ogImage}>
+    <meta property="og:image:width" content="1400">
+    <meta property="og:image:height" content="560">
+    <meta property="og:image:alt" content="Edit Page — edit text, replace images and remove elements on any webpage">
+    <meta property="og:locale" content={ogLocale}>
+    <meta property="og:locale:alternate" content={lang === 'zh' ? 'en_US' : 'zh_CN'}>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content={twitterTitle}>
+    <meta name="twitter:description" content={description}>
+    <meta name="twitter:image" content={ogImage}>
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+    <script is:inline define:vars={{ gaId }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', gaId);
+    </script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js" defer></script>
   <script is:inline>
     (function () {
@@ -58,7 +103,7 @@ const paddleConfig = { environment: import.meta.env.PADDLE_ENVIRONMENT || '', cl
   </style>
 </head>
 <body>
-  <header class="site-header"><nav class="container nav-content" aria-label={lang==='zh'?'主导航':'Main navigation'}><a class="brand" href={home}><img class="brand-mark" src={productIcon.src} width="34" height="34" alt=""><span>Edit Page</span></a><div class="nav-links"><a href={`${home}#features`}>{lang==='zh'?'功能':'Features'}</a><a href={`${home}#workflow`}>{lang==='zh'?'使用方法':'How it works'}</a><a href={`${home}#demo`}>{lang==='zh'?'观看演示':'Watch Demo'}</a><a href={`${home}#premium`}>Premium</a><a href={`${home}#faq`}>{lang==='zh'?'常见问题':'FAQ'}</a></div><div class="nav-actions"><a class="header-cta" href={store} data-install-link target="_blank" rel="noopener noreferrer">Install now</a><div class="lang-switch"><select id="locale-switcher" class="locale-select" aria-label={lang==='zh'?'切换语言':'Switch language'}><option value="en">English</option><option value="zh">中文</option></select><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></nav></header>
+  <header class="site-header"><nav class="container nav-content" aria-label={lang==='zh'?'主导航':'Main navigation'}><a class="brand" href={home}><img class="brand-mark" src={productIcon.src} width="34" height="34" alt=""><span>Edit Page</span></a><div class="nav-links"><a href={`${home}#features`}>{lang==='zh'?'功能':'Features'}</a><a href={`${home}#workflow`}>{lang==='zh'?'使用方法':'How it works'}</a><a href={lang==='zh'?'/zh/getting-started':'/getting-started'}>{lang==='zh'?'开始使用':'Get Started'}</a><a href={`${home}#demo`}>{lang==='zh'?'观看演示':'Watch Demo'}</a><a href={`${home}#premium`}>Premium</a><a href={`${home}#faq`}>{lang==='zh'?'常见问题':'FAQ'}</a></div><div class="nav-actions"><a class="header-cta" href={store} data-install-link target="_blank" rel="noopener noreferrer">Install now</a><div class="lang-switch"><select id="locale-switcher" class="locale-select" aria-label={lang==='zh'?'切换语言':'Switch language'}><option value="en">English</option><option value="zh">中文</option></select><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></nav></header>
   <main><slot /></main>
   <footer class="site-footer"><div class="container footer-main"><div><a class="brand" href={home}>Edit Page</a><p class="footer-copy">{t.footer.copyright}</p></div><div class="footer-links"><a href={lang==='en'?'/terms':'/zh/terms'}>{t.footer.terms}</a><a href={lang==='en'?'/refund':'/zh/refund'}>{t.footer.refund}</a><a href={lang==='en'?'/privacy':'/zh/privacy'}>{t.footer.privacy}</a><a href={lang==='en'?'/contact':'/zh/contact'}>{lang==='zh'?'联系我们':'Contact'}</a></div></div></footer>
   <script is:inline define:vars={{paddleConfig}}>window.EDIT_PAGE_PADDLE_CONFIG=paddleConfig;const init=()=>{if(['sandbox','production'].includes(paddleConfig.environment)&&paddleConfig.clientToken&&window.Paddle){Paddle.Environment.set(paddleConfig.environment);Paddle.Initialize({token:paddleConfig.clientToken})}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();</script>

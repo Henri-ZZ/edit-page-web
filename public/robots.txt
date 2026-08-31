@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /goodbye
+Disallow: /zh/goodbye
+
+Sitemap: https://editpage.henriz.dev/sitemap-index.xml
