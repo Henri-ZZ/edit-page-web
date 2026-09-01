@@ -4,8 +4,8 @@ import productIcon from '@/assets/edit-page-icon.svg';
 import chromeIcon from '@/assets/chrome.svg';
 import edgeIcon from '@/assets/edge.svg';
 import { CHROME_STORE_URL, EDGE_STORE_URL } from '@/lib/store-links';
-interface Props { lang?: Language; title?: string; description?: string; schema?: Record<string, unknown> | Record<string, unknown>[] }
-const { lang = 'en', title = 'Edit Page', description = lang === 'zh' ? '直接在网页上编辑文字、更改图片、移除元素并截图。' : 'Edit text, change images, remove elements and capture screenshots on any webpage.', schema } = Astro.props;
+interface Props { lang?: Language; title?: string; description?: string; schema?: Record<string, unknown> | Record<string, unknown>[]; preloadImage?: string }
+const { lang = 'en', title = 'Edit Page', description = lang === 'zh' ? '直接在网页上编辑文字、更改图片、移除元素并截图。' : 'Edit text, change images, remove elements and capture screenshots on any webpage.', schema, preloadImage } = Astro.props;
 const t = translations[lang];
 const home = lang === 'en' ? '/' : '/zh/';
 const store = CHROME_STORE_URL;
@@ -38,6 +38,7 @@ const schemaJson = schema ? JSON.stringify(schema).replace(/</g, '\\u003c') : ''
     <link rel="alternate" type="text/html" hreflang="en-US" href={enUrl}>
     <link rel="alternate" type="text/html" hreflang="zh-CN" href={zhUrl}>
     <link rel="alternate" type="text/html" hreflang="x-default" href={enUrl}>
+    {preloadImage && <link rel="preload" as="image" href={preloadImage} type="image/webp" fetchpriority="high">}
     <link rel="icon" type="image/svg+xml" href={productIcon.src}>
     <meta property="og:site_name" content="Edit Page">
     <meta property="og:type" content="website">
