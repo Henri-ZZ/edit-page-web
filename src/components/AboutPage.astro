@@ -1,0 +1,69 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import productIcon from '@/assets/edit-page-icon.svg';
+import chromeIcon from '@/assets/chrome.svg';
+import edgeIcon from '@/assets/edge.svg';
+import type { Language } from '@/i18n/ui';
+import { CHROME_STORE_URL, EDGE_STORE_URL } from '@/lib/store-links';
+import { AUTHOR_ID, authorSchema, breadcrumbSchema, organizationSchema, schemaGraph, webpageSchema } from '@/lib/structured-data';
+
+const { lang } = Astro.props as { lang: Language };
+const zh = lang === 'zh';
+const url = `https://editpage.henriz.dev${zh ? '/zh' : ''}/about/`;
+const c = zh ? {
+  title: '关于 Edit Page', meta: '了解 Edit Page、产品维护者 Henri Z.，以及我们对隐私、透明度和浏览器本地处理的承诺。',
+  eyebrow: '关于我们', heading: '让网页修改变得简单、直接、可撤销',
+  intro: 'Edit Page 是一款由 Henri Z. 独立开发和维护的浏览器插件。它帮助用户直接在现有网页中验证文字、图片和布局想法，而不需要修改网站代码。',
+  productTitle: '为什么是 Edit Page', productBody: '很多网页调整并不需要先搭建原型或等待代码发布。Edit Page 把常见的视觉修改放到当前页面中完成，让产品、设计、内容和营销人员能够更快地确认想法。',
+  principles: '产品原则', cards: [
+    ['本地优先','网页编辑、替换图片和截图在浏览器本地完成。我们不会收集你访问的网页内容。'],
+    ['清晰可恢复','修改只存在于当前标签页。刷新页面即可恢复网站原始内容。'],
+    ['无需账号','基础功能安装后即可使用，不需要创建 Edit Page 账号。'],
+    ['持续维护','产品功能、兼容性、隐私说明和使用文档会随着插件更新持续维护。']
+  ],
+  authorLabel: '开发与维护', authorTitle: 'Henri Z.', authorBody: 'Henri Z. 是 Edit Page 的创建者和维护者，负责插件开发、官网、产品文档与用户支持。',
+  contact: '联系 Henri', official: '官方渠道', officialBody: '请通过下方官方页面安装插件或联系我们。其他下载来源不由 Edit Page 维护。',
+  chrome: 'Chrome 应用商店', edge: 'Microsoft Edge Add-ons', email: '邮件支持',
+  cta: '开始使用 Edit Page', ctaBody: '安装插件，在任意普通网页上尝试你的第一次编辑。', install: '立即安装'
+} : {
+  title: 'About Edit Page', meta: 'Learn about Edit Page, its creator Henri Z., and our commitment to privacy, transparency, and local browser processing.',
+  eyebrow: 'About', heading: 'Make webpage editing simple, direct, and reversible',
+  intro: 'Edit Page is an independently developed browser extension created and maintained by Henri Z. It helps people test copy, image, and layout ideas directly on an existing webpage without changing the website code.',
+  productTitle: 'Why Edit Page exists', productBody: 'Many webpage changes do not need a new prototype or a production release first. Edit Page brings common visual edits into the current page so product, design, content, and marketing teams can validate ideas faster.',
+  principles: 'Product principles', cards: [
+    ['Local by default','Webpage edits, replacement images, and screenshots are processed in your browser. We do not collect the content of pages you visit.'],
+    ['Clear and reversible','Changes exist only in the current tab. Refreshing restores the original website.'],
+    ['No account required','Install and start using the core features without creating an Edit Page account.'],
+    ['Actively maintained','Features, compatibility, privacy information, and documentation are maintained as the extension evolves.']
+  ],
+  authorLabel: 'Created and maintained by', authorTitle: 'Henri Z.', authorBody: 'Henri Z. is the creator and maintainer of Edit Page, responsible for the extension, website, product documentation, and user support.',
+  contact: 'Contact Henri', official: 'Official channels', officialBody: 'Install Edit Page or contact us through the official destinations below. Downloads from other sources are not maintained by Edit Page.',
+  chrome: 'Chrome Web Store', edge: 'Microsoft Edge Add-ons', email: 'Email support',
+  cta: 'Start using Edit Page', ctaBody: 'Install the extension and make your first edit on any regular webpage.', install: 'Install now'
+};
+const schema = schemaGraph(
+  organizationSchema(),
+  authorSchema(),
+  {
+    ...webpageSchema({ url, name: c.title, description: c.meta, lang, type: 'AboutPage' }),
+    mainEntity: { '@id': AUTHOR_ID },
+  },
+  breadcrumbSchema([
+    { name: 'Edit Page', url: `https://editpage.henriz.dev${zh ? '/zh/' : '/'}` },
+    { name: c.eyebrow, url },
+  ]),
+);
+---
+<BaseLayout lang={lang} title={`${c.title} | Edit Page`} description={c.meta} schema={schema}>
+  <article class="about-page">
+    <section class="about-hero"><div class="container hero-inner"><img src={productIcon.src} width="76" height="76" alt="Edit Page"><span>{c.eyebrow}</span><h1>{c.heading}</h1><p>{c.intro}</p></div></section>
+    <section class="about-section"><div class="container story"><div><span class="section-label">Edit Page</span><h2>{c.productTitle}</h2></div><p>{c.productBody}</p></div></section>
+    <section class="about-section principles"><div class="container"><header><span class="section-label">Edit Page</span><h2>{c.principles}</h2></header><div class="principle-grid">{c.cards.map(([title,body])=><article><i>✓</i><h3>{title}</h3><p>{body}</p></article>)}</div></div></section>
+    <section class="about-section"><div class="container author-card"><div class="author-mark">HZ</div><div><span class="section-label">{c.authorLabel}</span><h2>{c.authorTitle}</h2><p>{c.authorBody}</p><a href="mailto:henri@henriz.dev">{c.contact} →</a></div></div></section>
+    <section class="about-section official"><div class="container official-grid"><div><span class="section-label">Edit Page</span><h2>{c.official}</h2><p>{c.officialBody}</p></div><div class="official-links"><a href={CHROME_STORE_URL} target="_blank" rel="noopener noreferrer"><img src={chromeIcon.src} width="28" height="28" alt="Chrome"><span>{c.chrome}</span><b>↗</b></a><a href={EDGE_STORE_URL} target="_blank" rel="noopener noreferrer"><img src={edgeIcon.src} width="28" height="28" alt="Microsoft Edge"><span>{c.edge}</span><b>↗</b></a><a href="mailto:henri@henriz.dev"><span class="mail-icon">@</span><span>{c.email}</span><b>→</b></a></div></div></section>
+    <section class="about-cta"><div class="container"><div><h2>{c.cta}</h2><p>{c.ctaBody}</p></div><a href={CHROME_STORE_URL} data-install-link target="_blank" rel="noopener noreferrer">{c.install} ↗</a></div></section>
+  </article>
+</BaseLayout>
+<style>
+  .about-hero{padding:90px 0 82px;text-align:center;background:radial-gradient(circle at 50% 0,#dfeaff,transparent 46%),linear-gradient(#fff,#f9fbff);border-bottom:1px solid var(--line)}.hero-inner{max-width:850px}.hero-inner>img{margin:0 auto 18px}.hero-inner>span,.section-label{color:var(--blue);font-size:13px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}.about-hero h1{margin:14px auto 20px;font-size:clamp(42px,6vw,68px);line-height:1.06;letter-spacing:-.055em}.about-hero p{max-width:740px;margin:0 auto;color:var(--muted);font-size:18px;line-height:1.8}.about-section{padding:70px 0}.story{display:grid;grid-template-columns:.8fr 1.2fr;gap:80px;align-items:start}.about-section h2{margin:8px 0 0;font-size:clamp(30px,4vw,45px);line-height:1.15;letter-spacing:-.045em}.story>p,.official-grid>div>p{margin:4px 0 0;color:var(--muted);font-size:17px;line-height:1.85}.principles{background:#f7f9fd}.principles header{margin-bottom:30px}.principle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.principle-grid article{padding:28px;border:1px solid #e0e6f0;border-radius:18px;background:#fff}.principle-grid i{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#e7efff;color:var(--blue);font-style:normal;font-weight:850}.principle-grid h3{margin:17px 0 7px;font-size:18px}.principle-grid p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}.author-card{display:grid;grid-template-columns:116px 1fr;gap:34px;align-items:center;max-width:880px;padding:42px;border:1px solid #dfe5ef;border-radius:24px;box-shadow:0 20px 55px #26395d12}.author-mark{display:grid;place-items:center;width:116px;height:116px;border-radius:28px;background:linear-gradient(135deg,#1769ff,#6337ec);color:#fff;font-size:34px;font-weight:850;letter-spacing:-.05em}.author-card h2{font-size:35px}.author-card p{max-width:650px;margin:12px 0;color:var(--muted);line-height:1.75}.author-card a{color:var(--blue);font-size:14px;font-weight:750;text-decoration:none}.official{border-top:1px solid var(--line)}.official-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:80px}.official-links{display:grid;gap:12px}.official-links a{display:flex;align-items:center;gap:13px;padding:17px 19px;border:1px solid #dfe5ef;border-radius:14px;text-decoration:none}.official-links a:hover{border-color:#a9c4fb;background:#f7faff}.official-links span:nth-child(2){flex:1;font-size:14px;font-weight:750}.official-links b{color:var(--blue)}.mail-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#e7efff;color:var(--blue);font-weight:850}.about-cta{padding:20px 0 76px}.about-cta>.container{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:42px 48px;border-radius:24px;background:linear-gradient(120deg,#155fee,#6638ec);color:#fff}.about-cta h2{margin:0;font-size:34px;letter-spacing:-.04em}.about-cta p{margin:6px 0 0;color:#dce6ff}.about-cta a{flex:0 0 auto;padding:13px 20px;border-radius:11px;background:#fff;color:var(--blue);font-weight:800;text-decoration:none}@media(max-width:800px){.story,.official-grid{grid-template-columns:1fr;gap:28px}.author-card{grid-template-columns:86px 1fr}.author-mark{width:86px;height:86px;border-radius:22px}.about-cta>.container{align-items:flex-start;flex-direction:column}}@media(max-width:560px){.about-hero{padding:64px 0}.about-hero p{font-size:16px}.about-section{padding:52px 0}.principle-grid{grid-template-columns:1fr}.author-card{grid-template-columns:1fr;padding:30px 24px}.about-cta>.container{padding:34px 26px}.about-cta h2{font-size:29px}}
+</style>

@@ -130,6 +130,7 @@ const schemaJson = schema ? JSON.stringify(schema).replace(/</g, '\\u003c') : ''
           <h2>{lang==='zh'?'支持':'Support'}</h2>
           <ul>
             <li><a href={`${home}#faq`}>{lang==='zh'?'常见问题':'FAQ'}</a></li>
+            <li><a href={lang==='en'?'/about':'/zh/about'}>{lang==='zh'?'关于我们':'About'}</a></li>
             <li><a href={lang==='en'?'/contact':'/zh/contact'}>{lang==='zh'?'联系我们':'Contact'}</a></li>
             <li><a href={lang==='en'?'/terms':'/zh/terms'}>{t.footer.terms}</a></li>
             <li><a href={lang==='en'?'/privacy':'/zh/privacy'}>{t.footer.privacy}</a></li>

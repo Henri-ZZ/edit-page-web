@@ -5,6 +5,7 @@ export const SITE_URL = 'https://editpage.henriz.dev';
 export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const SOFTWARE_ID = `${SITE_URL}/#software`;
+export const AUTHOR_ID = `${SITE_URL}/#henri-z`;
 
 type SchemaNode = Record<string, unknown>;
 
@@ -29,6 +30,19 @@ export function organizationSchema(): SchemaNode {
       caption: 'Edit Page',
     },
     email: 'henri@henriz.dev',
+    founder: { '@id': AUTHOR_ID },
+  };
+}
+
+export function authorSchema(): SchemaNode {
+  return {
+    '@type': 'Person',
+    '@id': AUTHOR_ID,
+    name: 'Henri Z.',
+    url: `${SITE_URL}/about/`,
+    email: 'henri@henriz.dev',
+    jobTitle: 'Creator and maintainer of Edit Page',
+    knowsAbout: ['Browser extensions', 'Web development', 'Webpage editing', 'Browser screenshots'],
   };
 }
 

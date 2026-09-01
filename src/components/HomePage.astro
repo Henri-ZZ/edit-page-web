@@ -15,7 +15,7 @@ import step3Video from '@/assets/steps/step3.mp4';
 import step4Video from '@/assets/steps/step4.mp4';
 import step5Video from '@/assets/steps/step5.mp4';
 import { CHROME_STORE_URL, EDGE_STORE_URL } from '@/lib/store-links';
-import { organizationSchema, schemaGraph, softwareSchema, webpageSchema, websiteSchema } from '@/lib/structured-data';
+import { authorSchema, organizationSchema, schemaGraph, softwareSchema, webpageSchema, websiteSchema } from '@/lib/structured-data';
 const { lang } = Astro.props as { lang: Language };
 const zh = lang === 'zh';
 const store = CHROME_STORE_URL;
@@ -45,6 +45,7 @@ const homeDescription = zh
   : 'Edit text, change images, remove elements and take screenshots right on the page—no code required, everything processed locally.';
 const homeSchema = schemaGraph(
   organizationSchema(),
+  authorSchema(),
   websiteSchema(lang),
   softwareSchema(lang),
   {

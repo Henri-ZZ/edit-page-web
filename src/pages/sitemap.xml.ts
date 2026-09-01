@@ -9,6 +9,7 @@ type PathPair = { en: string; zh: string };
 const PAGES: PathPair[] = [
   { en: '/', zh: '/zh/' },
   { en: '/getting-started/', zh: '/zh/getting-started/' },
+  { en: '/about/', zh: '/zh/about/' },
   { en: '/contact/', zh: '/zh/contact/' },
   { en: '/privacy/', zh: '/zh/privacy/' },
   { en: '/terms/', zh: '/zh/terms/' },
