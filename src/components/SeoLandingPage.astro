@@ -1,0 +1,103 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import editIcon from '@/assets/edit-text.svg';
+import imageIcon from '@/assets/change-image.svg';
+import removeIcon from '@/assets/remove-element.svg';
+import screenshotIcon from '@/assets/screenshot.svg';
+import { getLandingPage, LANDING_SLUGS, type LandingLang, type LandingSlug } from '@/lib/landing-pages';
+
+interface Props { lang: LandingLang; slug: LandingSlug }
+const { lang, slug } = Astro.props;
+const page = getLandingPage(lang, slug);
+const prefix = lang === 'zh' ? '/zh' : '';
+const iconMap = { edit: editIcon, image: imageIcon, remove: removeIcon, screenshot: screenshotIcon };
+const icon = iconMap[page.icon];
+const labels = lang === 'zh'
+  ? { privacy: '隐私优先', privacyText: '所有编辑都在当前浏览器标签页中完成，不上传网页内容。刷新页面即可恢复原状。', related: '继续了解其他功能', step: '步骤' }
+  : { privacy: 'Privacy by design', privacyText: 'Edits happen in your current browser tab. Edit Page does not upload webpage content, and a refresh restores the original.', related: 'Explore other Edit Page tools', step: 'Step' };
+const related = LANDING_SLUGS.filter((item) => item !== slug).map((item) => getLandingPage(lang, item));
+const url = `https://editpage.henriz.dev${prefix}/${slug}/`;
+const schema = [
+  {
+    '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'Edit Page',
+    applicationCategory: 'BrowserApplication', operatingSystem: 'Chrome, Microsoft Edge',
+    description: page.description, url,
+    offers: [{ '@type': 'Offer', price: '0', priceCurrency: lang === 'zh' ? 'CNY' : 'USD', category: 'Free' }, { '@type': 'Offer', price: lang === 'zh' ? '66' : '10', priceCurrency: lang === 'zh' ? 'CNY' : 'USD', category: 'Lifetime license' }]
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: page.faqs.map((faq) => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } }))
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Edit Page', item: `https://editpage.henriz.dev${lang === 'zh' ? '/zh/' : '/'}` },
+      { '@type': 'ListItem', position: 2, name: page.eyebrow, item: url }
+    ]
+  }
+];
+---
+<BaseLayout lang={lang} title={page.title} description={page.description} schema={schema}>
+  <article class="landing">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow"><img src={icon.src} width="28" height="28" alt="" />{page.eyebrow}</div>
+          <h1>{page.heading}</h1>
+          <p class="hero-intro">{page.intro}</p>
+          <div class="hero-actions">
+            <a class="primary" href="#" data-install-link target="_blank" rel="noopener noreferrer">{page.cta}</a>
+            <a class="secondary" href={`${prefix}/getting-started`}>{page.secondaryCta}<span aria-hidden="true">→</span></a>
+          </div>
+          <p class="microcopy">{lang === 'zh' ? '支持 Chrome 和 Microsoft Edge · 免费开始 · 无需注册' : 'Chrome and Microsoft Edge · Start free · No sign-up required'}</p>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <span class="visual-glow"></span>
+          <div class="browser-bar"><i></i><i></i><i></i><span>example.com</span></div>
+          <div class="page-preview">
+            <div class="preview-copy"><b></b><b></b><b></b><em></em></div>
+            <div class={`tool-demo ${page.icon}`}><img src={icon.src} width="58" height="58" alt="" /><strong>{page.eyebrow}</strong><span>{lang === 'zh' ? '点击网页内容开始操作' : 'Click page content to get started'}</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section benefits">
+      <div class="container">
+        <header class="section-head"><span>{page.eyebrow}</span><h2>{page.benefitsTitle}</h2></header>
+        <div class="cards">{page.benefits.map((benefit, index) => <article class="card"><b>{String(index + 1).padStart(2, '0')}</b><h3>{benefit.title}</h3><p>{benefit.text}</p></article>)}</div>
+      </div>
+    </section>
+
+    <section class="privacy"><div class="container privacy-inner"><div class="shield" aria-hidden="true">✓</div><div><span>{labels.privacy}</span><h2>{labels.privacyText}</h2></div></div></section>
+
+    <section class="section steps">
+      <div class="container">
+        <header class="section-head"><span>{lang === 'zh' ? '使用方法' : 'How it works'}</span><h2>{page.stepsTitle}</h2></header>
+        <ol>{page.steps.map((step, index) => <li><div class="step-number">{index + 1}</div><div><span>{labels.step} {index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol>
+      </div>
+    </section>
+
+    <section class="section use-cases">
+      <div class="container split">
+        <header class="section-head"><span>{lang === 'zh' ? '实际场景' : 'Use cases'}</span><h2>{page.useCasesTitle}</h2></header>
+        <div class="case-list">{page.useCases.map((item) => <article><span aria-hidden="true">↗</span><div><h3>{item.title}</h3><p>{item.text}</p></div></article>)}</div>
+      </div>
+    </section>
+
+    <section class="section notes"><div class="container note-box"><div><span>{lang === 'zh' ? '操作建议' : 'Practical tips'}</span><h2>{page.noteTitle}</h2></div><ul>{page.notes.map((note) => <li>{note}</li>)}</ul></div></section>
+
+    <section class="section faq">
+      <div class="container narrow"><header class="section-head"><span>FAQ</span><h2>{page.faqTitle}</h2></header><div class="faq-list">{page.faqs.map((faq) => <details><summary>{faq.question}<span aria-hidden="true">+</span></summary><p>{faq.answer}</p></details>)}</div></div>
+    </section>
+
+    <section class="section related"><div class="container"><header class="section-head"><span>Edit Page</span><h2>{labels.related}</h2></header><div class="related-grid">{related.map((item) => <a href={`${prefix}/${item.slug}`}><img src={iconMap[item.icon].src} width="34" height="34" alt="" /><span>{item.eyebrow}</span><b aria-hidden="true">→</b></a>)}</div></div></section>
+
+    <section class="final-cta"><div class="container final-inner"><div><span>Edit Page</span><h2>{lang === 'zh' ? '准备好直接修改网页了吗？' : 'Ready to edit the web your way?'}</h2><p>{lang === 'zh' ? '安装插件，在任意普通网页上开始编辑。' : 'Install the extension and start on any regular webpage.'}</p></div><a href="#" data-install-link target="_blank" rel="noopener noreferrer">{page.cta} <span aria-hidden="true">↗</span></a></div></section>
+  </article>
+</BaseLayout>
+
+<style>
+  .landing{overflow:hidden}.hero{padding:96px 0 82px;background:radial-gradient(circle at 78% 25%,rgba(23,105,255,.14),transparent 34%),linear-gradient(180deg,#f8faff 0%,#fff 100%)}.hero-grid{display:grid;grid-template-columns:1.02fr .98fr;align-items:center;gap:70px}.eyebrow,.section-head>span,.note-box>div>span,.privacy-inner>div>span,.final-inner>div>span{color:#1769ff;font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.eyebrow{display:flex;align-items:center;gap:10px;letter-spacing:0;text-transform:none}.hero h1{max-width:680px;margin:20px 0 22px;font-size:clamp(44px,5.6vw,72px);line-height:1.04;letter-spacing:-.055em}.hero-intro{max-width:650px;margin:0;color:#596176;font-size:19px;line-height:1.75}.hero-actions{display:flex;align-items:center;gap:24px;margin-top:34px}.primary,.final-inner>a{display:inline-flex;align-items:center;justify-content:center;padding:14px 23px;border-radius:11px;background:#1769ff;color:#fff;font-weight:800;text-decoration:none;box-shadow:0 12px 28px rgba(23,105,255,.25)}.primary:hover,.final-inner>a:hover{background:#0754e8}.secondary{display:inline-flex;gap:8px;color:#172037;font-weight:750;text-decoration:none}.secondary:hover{color:#1769ff}.microcopy{margin:18px 0 0;color:#8a92a5;font-size:13px}.hero-visual{position:relative;min-height:430px;border:1px solid #dde4f0;border-radius:20px;background:#fff;box-shadow:0 28px 80px rgba(35,54,91,.16);overflow:hidden;transform:rotate(1deg)}.visual-glow{position:absolute;inset:40px -90px -100px 80px;background:radial-gradient(circle,#c9ddff 0%,rgba(230,239,255,.3) 45%,transparent 70%)}.browser-bar{position:relative;height:58px;display:flex;align-items:center;gap:7px;padding:0 16px;border-bottom:1px solid #e8ecf3;background:#fafbfe}.browser-bar i{width:10px;height:10px;border-radius:50%;background:#ff6a6a}.browser-bar i:nth-child(2){background:#ffc64a}.browser-bar i:nth-child(3){background:#43c774}.browser-bar span{height:30px;flex:1;margin-left:12px;padding:5px 14px;border-radius:20px;background:#f0f3f8;color:#9aa2b2;font-size:12px}.page-preview{position:relative;min-height:372px;padding:62px 38px;background:linear-gradient(135deg,#fff 30%,#edf5ff)}.preview-copy{width:52%}.preview-copy b{display:block;height:17px;margin:12px 0;border-radius:6px;background:#172037}.preview-copy b:first-child{width:82%;height:25px}.preview-copy b:nth-child(2){width:62%}.preview-copy b:nth-child(3){width:74%}.preview-copy em{display:block;width:110px;height:40px;margin-top:28px;border-radius:8px;background:#1769ff}.tool-demo{position:absolute;right:24px;top:42px;width:220px;padding:30px 24px;border:1px solid #e3e8f2;border-radius:16px;background:rgba(255,255,255,.94);box-shadow:0 18px 45px rgba(35,54,91,.16)}.tool-demo img{margin-bottom:18px}.tool-demo strong,.tool-demo span{display:block}.tool-demo strong{font-size:17px}.tool-demo span{margin-top:5px;color:#727b90;font-size:12px}.section{padding:72px 0}.section-head{margin-bottom:32px}.section-head h2,.privacy h2,.note-box h2,.final-inner h2{margin:8px 0 0;font-size:clamp(30px,3.5vw,46px);line-height:1.15;letter-spacing:-.04em}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{padding:30px;border:1px solid #e4e9f2;border-radius:18px;background:#fff}.card>b{color:#1769ff;font-size:13px}.card h3,.case-list h3,.steps h3{margin:18px 0 7px;font-size:20px;line-height:1.3}.card p,.case-list p,.steps p,.faq p{margin:0;color:#687086}.privacy{padding:25px 0}.privacy-inner{display:flex;align-items:center;gap:24px;padding:38px 42px;border:1px solid #dbe6ff;border-radius:22px;background:#f5f8ff}.privacy h2{max-width:900px;font-size:25px;line-height:1.45}.shield{display:grid;place-items:center;width:58px;height:58px;flex:0 0 auto;border-radius:18px;background:#1769ff;color:#fff;font-size:28px;font-weight:900}.steps ol{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:0;padding:0;list-style:none}.steps li{display:flex;gap:18px;padding:28px;border-radius:18px;background:#f6f8fc}.step-number{display:grid;place-items:center;width:38px;height:38px;flex:0 0 auto;border-radius:50%;background:#1769ff;color:#fff;font-weight:800}.steps li span{color:#1769ff;font-size:12px;font-weight:800;text-transform:uppercase}.steps h3{margin-top:5px}.use-cases{background:#f7f9fd}.split{display:grid;grid-template-columns:.8fr 1.2fr;gap:80px}.case-list article{display:flex;gap:20px;padding:22px 0;border-bottom:1px solid #dfe5ef}.case-list article:first-child{padding-top:0}.case-list article>span{color:#1769ff;font-size:20px}.case-list h3{margin:0 0 5px}.note-box{display:grid;grid-template-columns:.75fr 1.25fr;gap:70px;padding:44px;border-radius:22px;background:#0d1730;color:#fff}.note-box ul{margin:0;padding-left:22px}.note-box li{padding:8px 0;color:#d8deed}.narrow{max-width:850px}.faq-list{border-top:1px solid #dfe4ed}.faq details{border-bottom:1px solid #dfe4ed}.faq summary{display:flex;justify-content:space-between;gap:20px;padding:23px 0;cursor:pointer;font-size:18px;font-weight:750;list-style:none}.faq summary::-webkit-details-marker{display:none}.faq summary span{color:#1769ff;font-size:25px}.faq details[open] summary span{transform:rotate(45deg)}.faq p{padding:0 40px 24px 0}.related{padding-top:30px}.related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.related-grid a{display:flex;align-items:center;gap:14px;padding:20px;border:1px solid #e1e6ef;border-radius:15px;text-decoration:none}.related-grid a:hover{border-color:#1769ff;box-shadow:0 10px 30px rgba(23,105,255,.1)}.related-grid a span{flex:1;font-weight:750}.related-grid a b{color:#1769ff}.final-cta{padding:30px 0 72px}.final-inner{display:flex;align-items:center;justify-content:space-between;gap:35px;padding:48px 52px;border-radius:24px;background:linear-gradient(120deg,#1769ff,#6535ec);color:#fff}.final-inner>div>span{color:#dce8ff}.final-inner h2{font-size:36px}.final-inner p{margin:8px 0 0;color:#e3e8ff}.final-inner>a{flex:0 0 auto;background:#fff;color:#1769ff;box-shadow:none}
+  @media(max-width:900px){.hero{padding-top:68px}.hero-grid,.split,.note-box{grid-template-columns:1fr}.hero-grid{gap:46px}.cards,.steps ol,.related-grid{grid-template-columns:1fr}.hero-visual{min-height:390px}.split,.note-box{gap:28px}.final-inner{align-items:flex-start;flex-direction:column}}@media(max-width:560px){.hero{padding:52px 0 55px}.hero h1{font-size:42px}.hero-intro{font-size:17px}.hero-actions{align-items:flex-start;flex-direction:column;gap:18px}.hero-visual{min-height:330px}.tool-demo{right:14px;width:185px;padding:22px 18px}.page-preview{min-height:272px;padding:38px 20px}.section{padding:52px 0}.privacy-inner,.note-box,.final-inner{padding:30px 24px}.privacy-inner{align-items:flex-start}.privacy h2{font-size:20px}.final-inner h2{font-size:30px}}
+</style>

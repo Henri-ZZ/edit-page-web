@@ -12,10 +12,12 @@ const PAGES: PathPair[] = [
   { en: '/contact/', zh: '/zh/contact/' },
   { en: '/privacy/', zh: '/zh/privacy/' },
   { en: '/terms/', zh: '/zh/terms/' },
-  { en: '/refund/', zh: '/zh/refund/' }
+  { en: '/refund/', zh: '/zh/refund/' },
+  { en: '/edit-text-on-webpage/', zh: '/zh/edit-text-on-webpage/' },
+  { en: '/replace-images-on-webpage/', zh: '/zh/replace-images-on-webpage/' },
+  { en: '/remove-elements-from-webpage/', zh: '/zh/remove-elements-from-webpage/' },
+  { en: '/full-page-screenshot/', zh: '/zh/full-page-screenshot/' }
 ];
-
-const today = new Date().toISOString().slice(0, 10);
 
 const escapeXml = (value: string): string =>
   value
@@ -32,7 +34,6 @@ function urlEntry(url: string, enUrl: string, zhUrl: string): string[] {
   return [
     '  <url>',
     `    <loc>${loc}</loc>`,
-    `    <lastmod>${today}</lastmod>`,
     `    <xhtml:link rel="alternate" hreflang="en-US" href="${enFull}"/>`,
     `    <xhtml:link rel="alternate" hreflang="zh-CN" href="${zhFull}"/>`,
     `    <xhtml:link rel="alternate" hreflang="x-default" href="${enFull}"/>`,
