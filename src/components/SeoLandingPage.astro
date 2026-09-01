@@ -5,6 +5,7 @@ import imageIcon from '@/assets/change-image.svg';
 import removeIcon from '@/assets/remove-element.svg';
 import screenshotIcon from '@/assets/screenshot.svg';
 import { getLandingPage, LANDING_SLUGS, type LandingLang, type LandingSlug } from '@/lib/landing-pages';
+import { breadcrumbSchema, faqSchema, schemaGraph, webpageSchema } from '@/lib/structured-data';
 
 interface Props { lang: LandingLang; slug: LandingSlug }
 const { lang, slug } = Astro.props;
@@ -17,25 +18,14 @@ const labels = lang === 'zh'
   : { privacy: 'Privacy by design', privacyText: 'Edits happen in your current browser tab. Edit Page does not upload webpage content, and a refresh restores the original.', related: 'Explore other Edit Page tools', step: 'Step' };
 const related = LANDING_SLUGS.filter((item) => item !== slug).map((item) => getLandingPage(lang, item));
 const url = `https://editpage.henriz.dev${prefix}/${slug}/`;
-const schema = [
-  {
-    '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'Edit Page',
-    applicationCategory: 'BrowserApplication', operatingSystem: 'Chrome, Microsoft Edge',
-    description: page.description, url,
-    offers: [{ '@type': 'Offer', price: '0', priceCurrency: lang === 'zh' ? 'CNY' : 'USD', category: 'Free' }, { '@type': 'Offer', price: lang === 'zh' ? '66' : '10', priceCurrency: lang === 'zh' ? 'CNY' : 'USD', category: 'Lifetime license' }]
-  },
-  {
-    '@context': 'https://schema.org', '@type': 'FAQPage',
-    mainEntity: page.faqs.map((faq) => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } }))
-  },
-  {
-    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Edit Page', item: `https://editpage.henriz.dev${lang === 'zh' ? '/zh/' : '/'}` },
-      { '@type': 'ListItem', position: 2, name: page.eyebrow, item: url }
-    ]
-  }
-];
+const schema = schemaGraph(
+  webpageSchema({ url, name: page.title, description: page.description, lang }),
+  breadcrumbSchema([
+    { name: 'Edit Page', url: `https://editpage.henriz.dev${lang === 'zh' ? '/zh/' : '/'}` },
+    { name: page.eyebrow, url },
+  ]),
+  faqSchema(page.faqs),
+);
 ---
 <BaseLayout lang={lang} title={page.title} description={page.description} schema={schema}>
   <article class="landing">

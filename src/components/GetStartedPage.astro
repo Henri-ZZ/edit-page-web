@@ -6,6 +6,7 @@ import edgeIcon from '@/assets/edge.svg';
 import dashboardImage from '@/assets/screenshots/dashboard.png';
 import editingImage from '@/assets/screenshots/editing.png';
 import { CHROME_STORE_URL, EDGE_STORE_URL } from '@/lib/store-links';
+import { breadcrumbSchema, schemaGraph, webpageSchema } from '@/lib/structured-data';
 
 const { lang } = Astro.props as { lang: Language };
 const zh = lang === 'zh';
@@ -40,9 +41,34 @@ const c = zh ? {
   trouble: { title:'Troubleshooting', lead:'If something does not work as expected, start with these checks.', items:[['Nothing happens when I select the extension','Make sure the current tab is a regular http or https webpage, then refresh and try again. Browser settings and extension stores are unsupported.'],['I cannot select text or an element','The content may be inside an iframe or protected area. Try content in the main page to confirm that the tool works.'],['A replaced image changes back','The website may be re-rendering that section. Wait for the page to finish loading, then replace it again.'],['The screenshot is not in my clipboard','Check the destination in the Dashboard and make sure Clipboard permission is allowed, or switch to Download.'],['Images are missing from a full-page capture','Scroll to the bottom first so lazy-loaded content appears, then return to the top and start the capture.'],['Features behave unexpectedly after an update','Refresh the current webpage. If the issue remains, restart the browser and confirm that the extension is up to date.']] },
   finishTitle:'Now, make your first edit', finishBody:'Open any regular webpage, select the Edit Page icon in your toolbar, then choose Edit text.', reviewFirstEdit:'Review the editing steps', support:'Still need help? Contact us'
 };
+const guideUrl = `https://editpage.henriz.dev${zh ? '/zh' : ''}/getting-started/`;
+const guideTitle = `${c.eyebrow} | Edit Page`;
+const guideSchema = schemaGraph(
+  {
+    ...webpageSchema({ url: guideUrl, name: guideTitle, description: c.meta, lang, type: ['WebPage', 'TechArticle'] }),
+    headline: c.title,
+    mainEntity: {
+      '@type': 'HowTo',
+      name: c.first.title,
+      description: c.first.lead,
+      totalTime: 'PT5M',
+      step: c.first.steps.map(([title, text], index) => ({
+        '@type': 'HowToStep',
+        position: index + 1,
+        name: title,
+        text,
+        url: `${guideUrl}#first-edit`,
+      })),
+    },
+  },
+  breadcrumbSchema([
+    { name: 'Edit Page', url: `https://editpage.henriz.dev${zh ? '/zh/' : '/'}` },
+    { name: c.eyebrow, url: guideUrl },
+  ]),
+);
 ---
 
-<BaseLayout lang={lang} title={`${c.eyebrow} | Edit Page`} description={c.meta}>
+<BaseLayout lang={lang} title={guideTitle} description={c.meta} schema={guideSchema}>
   {isInstalled && <section class="installed-banner"><div class="container"><div><span>{c.installedEyebrow}</span><h2>{c.installedTitle}</h2><p>{c.installedCopy}</p></div><a href="#setup">{c.startSetup} ↓</a></div></section>}
   <section class="guide-hero"><div class="container"><span>{c.eyebrow}</span><h1>{c.title}</h1><p>{c.intro}</p>{isInstalled ? <a class="primary-link" href="#setup">{c.startSetup} ↓</a> : <a class="primary-link" href={CHROME_STORE_URL} data-install-link target="_blank" rel="noopener noreferrer">{c.installNow} ↗</a>}</div></section>
   <div class="container mobile-toc"><details><summary>{c.onThisPage}<span>＋</span></summary><nav aria-label={c.onThisPage}>{c.nav.map(([id,label])=><a href={`#${id}`}>{label}</a>)}</nav></details></div>
