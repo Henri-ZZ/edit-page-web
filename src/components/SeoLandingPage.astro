@@ -37,7 +37,7 @@ const schema = schemaGraph(
           <p class="hero-intro">{page.intro}</p>
           <div class="hero-actions">
             <a class="primary" href="#" data-install-link target="_blank" rel="noopener noreferrer">{page.cta}</a>
-            <a class="secondary" href={`${prefix}/getting-started`}>{page.secondaryCta}<span aria-hidden="true">→</span></a>
+            <a class="secondary" href={`${prefix}/getting-started/`}>{page.secondaryCta}<span aria-hidden="true">→</span></a>
           </div>
           <p class="microcopy">{lang === 'zh' ? '支持 Chrome 和 Microsoft Edge · 免费开始 · 无需注册' : 'Chrome and Microsoft Edge · Start free · No sign-up required'}</p>
         </div>
@@ -81,7 +81,7 @@ const schema = schemaGraph(
       <div class="container narrow"><header class="section-head"><span>FAQ</span><h2>{page.faqTitle}</h2></header><div class="faq-list">{page.faqs.map((faq) => <details><summary>{faq.question}<span aria-hidden="true">+</span></summary><p>{faq.answer}</p></details>)}</div></div>
     </section>
 
-    <section class="section related"><div class="container"><header class="section-head"><span>Edit Page</span><h2>{labels.related}</h2></header><div class="related-grid">{related.map((item) => <a href={`${prefix}/${item.slug}`}><img src={iconMap[item.icon].src} width="34" height="34" alt="" /><span>{item.eyebrow}</span><b aria-hidden="true">→</b></a>)}</div></div></section>
+    <section class="section related"><div class="container"><header class="section-head"><span>Edit Page</span><h2>{labels.related}</h2></header><div class="related-grid">{related.map((item) => <a href={`${prefix}/${item.slug}/`}><img src={iconMap[item.icon].src} width="34" height="34" alt="" /><span>{item.eyebrow}</span><b aria-hidden="true">→</b></a>)}</div></div></section>
 
     <section class="final-cta"><div class="container final-inner"><div><span>Edit Page</span><h2>{lang === 'zh' ? '准备好直接修改网页了吗？' : 'Ready to edit the web your way?'}</h2><p>{lang === 'zh' ? '安装插件，在任意普通网页上开始编辑。' : 'Install the extension and start on any regular webpage.'}</p></div><a href="#" data-install-link target="_blank" rel="noopener noreferrer">{page.cta} <span aria-hidden="true">↗</span></a></div></section>
   </article>

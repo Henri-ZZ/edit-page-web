@@ -1,4 +1,6 @@
 ---
+// Reads ?installed= and ?browser= at request time, so it must stay dynamic.
+export const prerender = false;
 import GetStartedPage from '@/components/GetStartedPage.astro';
 ---
 <GetStartedPage lang="zh" />

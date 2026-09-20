@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /goodbye
-Disallow: /zh/goodbye
+
+# /goodbye and /zh/goodbye stay out of the index via a noindex meta tag.
+# Do not Disallow them here, otherwise Google can never read that directive.
 
 Sitemap: https://editpage.henriz.dev/sitemap.xml

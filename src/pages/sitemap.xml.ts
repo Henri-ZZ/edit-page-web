@@ -28,6 +28,8 @@ const escapeXml = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
+const LASTMOD = new Date().toISOString().slice(0, 10);
+
 function urlEntry(url: string, enUrl: string, zhUrl: string): string[] {
   const enFull = escapeXml(enUrl);
   const zhFull = escapeXml(zhUrl);
@@ -35,6 +37,7 @@ function urlEntry(url: string, enUrl: string, zhUrl: string): string[] {
   return [
     '  <url>',
     `    <loc>${loc}</loc>`,
+    `    <lastmod>${LASTMOD}</lastmod>`,
     `    <xhtml:link rel="alternate" hreflang="en-US" href="${enFull}"/>`,
     `    <xhtml:link rel="alternate" hreflang="zh-CN" href="${zhFull}"/>`,
     `    <xhtml:link rel="alternate" hreflang="x-default" href="${enFull}"/>`,

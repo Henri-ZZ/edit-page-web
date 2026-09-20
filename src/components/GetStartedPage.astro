@@ -10,7 +10,7 @@ import { AUTHOR_ID, breadcrumbSchema, schemaGraph, webpageSchema } from '@/lib/s
 
 const { lang } = Astro.props as { lang: Language };
 const zh = lang === 'zh';
-const contact = zh ? '/zh/contact' : '/contact';
+const contact = zh ? '/zh/contact/' : '/contact/';
 const installedValue = Astro.url.searchParams.get('installed');
 const isInstalled = installedValue === '1' || installedValue === 'true';
 const browserValue = Astro.url.searchParams.get('browser')?.toLowerCase();
@@ -72,7 +72,7 @@ const guideSchema = schemaGraph(
 
 <BaseLayout lang={lang} title={guideTitle} description={c.meta} schema={guideSchema}>
   {isInstalled && <section class="installed-banner"><div class="container"><div><span>{c.installedEyebrow}</span><h2>{c.installedTitle}</h2><p>{c.installedCopy}</p></div><a href="#setup">{c.startSetup} ↓</a></div></section>}
-  <section class="guide-hero"><div class="container"><span>{c.eyebrow}</span><h1>{c.title}</h1><p>{c.intro}</p><div class="guide-byline"><span>{zh?'作者':'By'} <a href={zh?'/zh/about':'/about'}>Henri Z.</a></span><i aria-hidden="true">·</i><span>{zh?'更新于':'Updated'} <time datetime="2026-09-01">{zh?'2026年9月1日':'September 1, 2026'}</time></span></div>{isInstalled ? <a class="primary-link" href="#setup">{c.startSetup} ↓</a> : <a class="primary-link" href={CHROME_STORE_URL} data-install-link target="_blank" rel="noopener noreferrer">{c.installNow} ↗</a>}</div></section>
+  <section class="guide-hero"><div class="container"><span>{c.eyebrow}</span><h1>{c.title}</h1><p>{c.intro}</p><div class="guide-byline"><span>{zh?'作者':'By'} <a href={zh?'/zh/about/':'/about/'}>Henri Z.</a></span><i aria-hidden="true">·</i><span>{zh?'更新于':'Updated'} <time datetime="2026-09-01">{zh?'2026年9月1日':'September 1, 2026'}</time></span></div>{isInstalled ? <a class="primary-link" href="#setup">{c.startSetup} ↓</a> : <a class="primary-link" href={CHROME_STORE_URL} data-install-link target="_blank" rel="noopener noreferrer">{c.installNow} ↗</a>}</div></section>
   <div class="container mobile-toc"><details><summary>{c.onThisPage}<span>＋</span></summary><nav aria-label={c.onThisPage}>{c.nav.map(([id,label])=><a href={`#${id}`}>{label}</a>)}</nav></details></div>
   <div class="container guide-layout">
     <aside><nav aria-label={c.onThisPage}><strong>{c.onThisPage}</strong>{c.nav.map(([id,label],i)=><a href={`#${id}`} class={i===0?'active':undefined}><span>{String(i+1).padStart(2,'0')}</span>{label}</a>)}</nav></aside>

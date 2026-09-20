@@ -72,21 +72,19 @@ const schemaJson = schema ? JSON.stringify(schema).replace(/</g, '\\u003c') : ''
       var isZh = url.pathname.indexOf('/zh') === 0;
       var saved = null;
       try { saved = localStorage.getItem(KEY); } catch (e) {}
-      var preferred;
-      if (saved === 'en' || saved === 'zh') { preferred = saved; }
-      else {
-        var nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
-        preferred = nav.indexOf('zh') === 0 ? 'zh' : 'en';
-      }
       function targetFor(l) {
         var p = url.pathname;
         if (l === 'zh' && !isZh) { return (p === '/' ? '/zh/' : '/zh' + p) + url.search + url.hash; }
         if (l === 'en' && isZh) { return (p === '/zh/' || p === '/zh' ? '/' : p.replace(/^\/zh/, '')) + url.search + url.hash; }
         return null;
       }
-      if (saved === null && preferred !== lang) {
-        var t = targetFor(preferred);
-        if (t) { try { localStorage.setItem(KEY, preferred); } catch (e) {} location.replace(t); return; }
+      // Only follow a language the visitor explicitly picked on this device.
+      // Never redirect from navigator.language: crawlers and first-time visitors
+      // would be bounced away from the URL they requested, which makes Google
+      // report the page as "Page with redirect" instead of indexing it.
+      if ((saved === 'en' || saved === 'zh') && saved !== lang) {
+        var savedTarget = targetFor(saved);
+        if (savedTarget) { location.replace(savedTarget); return; }
       }
       function init() {
         var sel = document.getElementById('locale-switcher');
@@ -108,7 +106,7 @@ const schemaJson = schema ? JSON.stringify(schema).replace(/</g, '\\u003c') : ''
   </style>
 </head>
 <body>
-  <header class="site-header"><nav class="container nav-content" aria-label={lang==='zh'?'主导航':'Main navigation'}><a class="brand" href={home}><img class="brand-mark" src={productIcon.src} width="34" height="34" alt=""><span>Edit Page</span></a><div class="nav-links"><a href={`${home}#features`}>{lang==='zh'?'功能':'Features'}</a><a href={`${home}#workflow`}>{lang==='zh'?'使用方法':'How it works'}</a><a href={lang==='zh'?'/zh/getting-started':'/getting-started'}>{lang==='zh'?'开始使用':'Get Started'}</a><a href={`${home}#demo`}>{lang==='zh'?'观看演示':'Watch Demo'}</a><a href={`${home}#premium`}>Premium</a><a href={`${home}#faq`}>{lang==='zh'?'常见问题':'FAQ'}</a></div><div class="nav-actions"><a class="header-cta" href={store} data-install-link target="_blank" rel="noopener noreferrer">Install now</a><div class="lang-switch"><select id="locale-switcher" class="locale-select" aria-label={lang==='zh'?'切换语言':'Switch language'}><option value="en">English</option><option value="zh">中文</option></select><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></nav></header>
+  <header class="site-header"><nav class="container nav-content" aria-label={lang==='zh'?'主导航':'Main navigation'}><a class="brand" href={home}><img class="brand-mark" src={productIcon.src} width="34" height="34" alt=""><span>Edit Page</span></a><div class="nav-links"><a href={`${home}#features`}>{lang==='zh'?'功能':'Features'}</a><a href={`${home}#workflow`}>{lang==='zh'?'使用方法':'How it works'}</a><a href={lang==='zh'?'/zh/getting-started/':'/getting-started/'}>{lang==='zh'?'开始使用':'Get Started'}</a><a href={`${home}#demo`}>{lang==='zh'?'观看演示':'Watch Demo'}</a><a href={`${home}#premium`}>Premium</a><a href={`${home}#faq`}>{lang==='zh'?'常见问题':'FAQ'}</a></div><div class="nav-actions"><a class="header-cta" href={store} data-install-link target="_blank" rel="noopener noreferrer">Install now</a><div class="lang-switch"><select id="locale-switcher" class="locale-select" aria-label={lang==='zh'?'切换语言':'Switch language'}><option value="en">English</option><option value="zh">中文</option></select><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></div></nav></header>
   <main><slot /></main>
   <footer class="site-footer">
     <div class="container">
@@ -130,18 +128,18 @@ const schemaJson = schema ? JSON.stringify(schema).replace(/</g, '\\u003c') : ''
           <h2>{lang==='zh'?'支持':'Support'}</h2>
           <ul>
             <li><a href={`${home}#faq`}>{lang==='zh'?'常见问题':'FAQ'}</a></li>
-            <li><a href={lang==='en'?'/about':'/zh/about'}>{lang==='zh'?'关于我们':'About'}</a></li>
-            <li><a href={lang==='en'?'/contact':'/zh/contact'}>{lang==='zh'?'联系我们':'Contact'}</a></li>
-            <li><a href={lang==='en'?'/terms':'/zh/terms'}>{t.footer.terms}</a></li>
-            <li><a href={lang==='en'?'/privacy':'/zh/privacy'}>{t.footer.privacy}</a></li>
-            <li><a href={lang==='en'?'/refund':'/zh/refund'}>{t.footer.refund}</a></li>
+            <li><a href={lang==='en'?'/about/':'/zh/about/'}>{lang==='zh'?'关于我们':'About'}</a></li>
+            <li><a href={lang==='en'?'/contact/':'/zh/contact/'}>{lang==='zh'?'联系我们':'Contact'}</a></li>
+            <li><a href={lang==='en'?'/terms/':'/zh/terms/'}>{t.footer.terms}</a></li>
+            <li><a href={lang==='en'?'/privacy/':'/zh/privacy/'}>{t.footer.privacy}</a></li>
+            <li><a href={lang==='en'?'/refund/':'/zh/refund/'}>{t.footer.refund}</a></li>
           </ul>
         </nav>
         <nav class="footer-column" aria-label={lang==='zh'?'资源':'Resources'}>
           <h2>{lang==='zh'?'资源':'Resources'}</h2>
           <ul>
             <li><a href={`${home}#demo`}>{lang==='zh'?'观看演示':'Watch demo'}</a></li>
-            <li><a href={lang==='en'?'/getting-started':'/zh/getting-started'}>{lang==='zh'?'开始使用':'Getting started'}</a></li>
+            <li><a href={lang==='en'?'/getting-started/':'/zh/getting-started/'}>{lang==='zh'?'开始使用':'Getting started'}</a></li>
           </ul>
         </nav>
         <nav class="footer-column" aria-label={lang==='zh'?'下载':'Download'}>
@@ -155,10 +153,10 @@ const schemaJson = schema ? JSON.stringify(schema).replace(/</g, '\\u003c') : ''
       <nav class="footer-guides" aria-label={lang==='zh'?'功能指南':'Feature guides'}>
         <h2>{lang==='zh'?'功能指南':'Feature guides'}</h2>
         <ul class="footer-guide-list">
-          <li><a href={lang==='en'?'/edit-text-on-webpage':'/zh/edit-text-on-webpage'}>{lang==='zh'?'编辑网页文字':'Edit webpage text'}</a></li>
-          <li><a href={lang==='en'?'/replace-images-on-webpage':'/zh/replace-images-on-webpage'}>{lang==='zh'?'替换网页图片':'Replace webpage images'}</a></li>
-          <li><a href={lang==='en'?'/remove-elements-from-webpage':'/zh/remove-elements-from-webpage'}>{lang==='zh'?'移除网页元素':'Remove webpage elements'}</a></li>
-          <li><a href={lang==='en'?'/full-page-screenshot':'/zh/full-page-screenshot'}>{lang==='zh'?'网页整页截图':'Full-page screenshot'}</a></li>
+          <li><a href={lang==='en'?'/edit-text-on-webpage/':'/zh/edit-text-on-webpage/'}>{lang==='zh'?'编辑网页文字':'Edit webpage text'}</a></li>
+          <li><a href={lang==='en'?'/replace-images-on-webpage/':'/zh/replace-images-on-webpage/'}>{lang==='zh'?'替换网页图片':'Replace webpage images'}</a></li>
+          <li><a href={lang==='en'?'/remove-elements-from-webpage/':'/zh/remove-elements-from-webpage/'}>{lang==='zh'?'移除网页元素':'Remove webpage elements'}</a></li>
+          <li><a href={lang==='en'?'/full-page-screenshot/':'/zh/full-page-screenshot/'}>{lang==='zh'?'网页整页截图':'Full-page screenshot'}</a></li>
         </ul>
       </nav>
       <div class="footer-bottom"><p class="footer-copy">{t.footer.copyright}</p></div>
