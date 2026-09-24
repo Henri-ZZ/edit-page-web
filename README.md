@@ -13,7 +13,9 @@ npm run dev
 
 1. 把代码推到 GitHub
 2. 在 Vercel 导入项目
-3. 在 Vercel 的 `Settings > General` 里把 `Node.js Version` 设为 `20.x`
+3. Node.js 版本：`package.json` 的 `engines.node` 已固定为 `24.x`，它会覆盖 Vercel 的
+   `Settings > General > Node.js Version` 设置，无需手动改后台。
+   Vercel 已计划在 2026-10-01 停用 Node 20，升级后请确认部署使用的是 24。
 4. 在 Vercel 的 `Settings > Environment Variables` 配置环境变量：
     - `PADDLE_API_KEY`
     - `PADDLE_WEBHOOK_SECRET`
