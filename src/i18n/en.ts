@@ -88,25 +88,40 @@ export default {
   },
   privacy: {
     title: 'Privacy Policy',
-    lastUpdated: 'Last Updated: April 2026',
+    lastUpdated: 'Last Updated: September 2026',
     sections: [
       {
         title: '1. Data Collection',
-        content: 'This browser extension does not collect, store, or transmit any personal sensitive data of users, including but not limited to passwords, browsing history, payment information, and personal identity information.'
+        content: [
+          'Edit Page is designed to collect as little data as possible.',
+          'We may collect limited technical and product usage information, such as the extension version, browser and operating system, language, license and activation information, and which Edit Page features are used.',
+          'We do not collect the websites you visit, browsing history, webpage content, text you edit, images you replace, screenshots you create, passwords, form contents, or clipboard contents.'
+        ]
       },
       {
-        title: '2. Data Storage',
-        content: 'All configurations and authorization status of the extension are stored only on the user\'s local device and will not be uploaded to any external servers.'
+        title: '2. Data Storage and Use',
+        content: [
+          'Most Edit Page functionality runs locally in your browser. Your edits and screenshots are not uploaded to our servers.',
+          'Limited technical, licensing, and usage information may be sent to our servers to manage licenses, maintain compatibility, diagnose problems, prevent abuse, and improve Edit Page.',
+          'License activation may use a hashed device identifier for activation management. It is not used to track your browsing activity.'
+        ]
       },
       {
         title: '3. Third-Party Sharing',
-        content: 'We will not share or sell user data with any third parties, and will only provide necessary information to regulatory authorities in compliance with legal requirements.'
+        content: [
+          'We do not sell your data or use it for advertising.',
+          'Limited technical information may be processed by service providers necessary to operate Edit Page, such as hosting and database providers. We may also disclose information when required by law.'
+        ]
       },
       {
         title: '4. Payment Data',
-        content: 'Payment-related data is independently processed by the Paddle platform in accordance with its privacy policy. This tool does not obtain any payment-related information.'
+        content: [
+          'Payments are processed independently by Paddle in accordance with its privacy policy.',
+          'Edit Page does not collect or store your payment card or other payment account information.'
+        ]
       }
-    ]
+    ],
+    compliance: 'Our use of information complies with the Chrome Web Store User Data Policy, including its Limited Use requirements.'
   },
   contactPage: {
     meta: 'Get in touch with the Edit Page team for questions, feedback, or support.',

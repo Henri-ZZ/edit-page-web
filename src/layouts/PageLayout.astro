@@ -8,7 +8,8 @@ interface Props {
   content: {
     title: string;
     lastUpdated: string;
-    sections: Array<{ title: string; content: string }>;
+    sections: Array<{ title: string; content: string | string[] }>;
+    compliance?: string;
   };
 }
 
@@ -43,6 +44,18 @@ const { lang = 'en', title, content } = Astro.props;
       color: #555;
       line-height: 1.8;
     }
+    .page-content section p {
+      margin: 0 0 12px;
+    }
+    .page-content section p:last-child {
+      margin-bottom: 0;
+    }
+    .compliance {
+      margin: 8px 0 0;
+      padding-top: 22px;
+      border-top: 1px solid #e2e6ed;
+      font-size: 14px;
+    }
   </style>
   <div class="container">
     <div class="page-content">
@@ -51,9 +64,12 @@ const { lang = 'en', title, content } = Astro.props;
       {content.sections.map((section) => (
         <section>
           <h2>{section.title}</h2>
-          <p>{section.content}</p>
+          {(Array.isArray(section.content) ? section.content : [section.content]).map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
         </section>
       ))}
+      {content.compliance && <p class="compliance">{content.compliance}</p>}
     </div>
   </div>
 </BaseLayout>
