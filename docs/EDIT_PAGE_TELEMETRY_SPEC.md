@@ -293,7 +293,7 @@ export interface TelemetryBatchRequestV1 {
   installationId: string; // random UUID
   sentAt: string; // ISO 8601 client diagnostic time, bounded by server validation
   environment: TelemetryEnvironmentV1;
-  usage: DailyUsageV1[]; // e.g. 1..7 days; sorted, unique dates
+  usage: DailyUsageV1[]; // e.g. 1..7 days of unique UTC dates (order is normalized server-side)
 }
 
 export interface TelemetryBatchResponseV1 {
@@ -369,7 +369,7 @@ Validation requirements:
 - cap usage days (recommended maximum 7), event keys per day, and total summed counters;
 - dates must be valid UTC dates and within an explicit window, e.g. no future date beyond one day and no older than seven days;
 - `sentAt` must be valid ISO 8601 and within a generous bounded skew; server time remains authoritative;
-- reject duplicate dates in one request;
+- reject duplicate dates in one request; array order is not significant (the parser sorts the days ascending before validating, so a newest-first client cannot lose a batch to a permanent 4xx);
 - never dynamically spread request objects into ORM data.
 
 The implementation MUST specifically prevent accidental storage of fields such as `url`, `domain`, `pageTitle`, `referrer`, `selectedText`, `pageText`, `html`, `selector`, `imageUrl`, and `licenseKey`. Unknown data must die at the API boundary.

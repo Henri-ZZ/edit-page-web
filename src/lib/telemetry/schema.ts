@@ -17,6 +17,20 @@ import {
 
 const DAY_MS = 86_400_000;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * Compare two validated UUIDs case-insensitively.
+ *
+ * `UUID_V4` accepts either case, but Postgres normalizes `uuid` columns to
+ * lowercase. Without this, a client that sends an uppercase `installationId`
+ * would be stored lowercase and then look like a *different* installation when
+ * it retries its own requestId — turning a deduplicated 200 into a 409.
+ * Identifier casing is intentionally preserved in the response so a client can
+ * match it against the exact value it sent.
+ */
+export function isSameUuid(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
+}
 const UTC_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const EXTENSION_VERSION = /^\d+(?:\.\d+){0,3}(?:[-+][0-9A-Za-z.-]+)?$/;
 
@@ -111,19 +125,23 @@ export function parseTelemetryBatchV1(raw: unknown, now = new Date()): Telemetry
   const earliest = today - MAX_EVENT_AGE_DAYS * DAY_MS;
   const latest = today + MAX_FUTURE_DATE_DAYS * DAY_MS;
   const seenDates = new Set<string>();
-  let previousDate = '';
   let totalCounters = 0;
 
-  const usage = parsed.usage.map((day, dayIndex) => {
+  // Every day is stored as its own (installationId, date) row, so the order of
+  // the array carries no meaning. Sorting a copy here keeps a client that sends
+  // newest-first from losing the entire batch to a permanent 4xx that must not
+  // be retried unchanged.
+  const sortedUsage = [...parsed.usage].sort((a, b) => a.date.localeCompare(b.date));
+
+  const usage = sortedUsage.map((day, dayIndex) => {
     const dateMs = parseUtcDate(day.date);
     if (dateMs === null || dateMs < earliest || dateMs > latest) {
       throw new z.ZodError([{ code: 'custom', path: ['usage', dayIndex, 'date'], message: 'date outside allowed window' }]);
     }
-    if (seenDates.has(day.date) || (previousDate && day.date <= previousDate)) {
-      throw new z.ZodError([{ code: 'custom', path: ['usage', dayIndex, 'date'], message: 'dates must be sorted and unique' }]);
+    if (seenDates.has(day.date)) {
+      throw new z.ZodError([{ code: 'custom', path: ['usage', dayIndex, 'date'], message: 'duplicate date' }]);
     }
     seenDates.add(day.date);
-    previousDate = day.date;
 
     const events: Record<string, number> = {};
     for (const [key, count] of Object.entries(day.events)) {

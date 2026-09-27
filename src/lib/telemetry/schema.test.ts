@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseTelemetryBatchV1, type TelemetryBatchRequestV1 } from './schema';
+import { isSameUuid, parseTelemetryBatchV1, type TelemetryBatchRequestV1 } from './schema';
 
 const NOW = new Date('2026-09-27T08:15:00.000Z');
 
@@ -56,7 +56,7 @@ describe('parseTelemetryBatchV1', () => {
     expect(() => parseTelemetryBatchV1(unqualified, NOW)).toThrow();
   });
 
-  it('rejects duplicate, unsorted, stale, and empty usage days', () => {
+  it('rejects duplicate, stale, and empty usage days', () => {
     const duplicate = validBatch();
     duplicate.usage.push({ ...duplicate.usage[0] });
     expect(() => parseTelemetryBatchV1(duplicate, NOW)).toThrow();
@@ -70,6 +70,39 @@ describe('parseTelemetryBatchV1', () => {
     expect(() => parseTelemetryBatchV1(empty, NOW)).toThrow();
   });
 
+  it('normalizes usage day order instead of rejecting it', () => {
+    const batch = validBatch();
+    batch.usage = [
+      { date: '2026-09-26', events: { 'edit.start': 1 } },
+      { date: '2026-09-24', events: { 'text.edit': 2 } },
+      { date: '2026-09-25', events: { 'history.undo': 3 } },
+    ];
+
+    const parsed = parseTelemetryBatchV1(batch, NOW);
+
+    expect(parsed.usage.map((day) => day.date)).toEqual([
+      '2026-09-24',
+      '2026-09-25',
+      '2026-09-26',
+    ]);
+    expect(parsed.usage.map((day) => Object.keys(day.events)[0])).toEqual([
+      'text.edit',
+      'history.undo',
+      'edit.start',
+    ]);
+  });
+
+  it('rejects the same date twice regardless of array order', () => {
+    const batch = validBatch();
+    batch.usage = [
+      { date: '2026-09-26', events: { 'edit.start': 1 } },
+      { date: '2026-09-25', events: { 'text.edit': 1 } },
+      { date: '2026-09-26', events: { 'history.undo': 1 } },
+    ];
+
+    expect(() => parseTelemetryBatchV1(batch, NOW)).toThrow();
+  });
+
   it('strictly requires random UUID v4 identifiers', () => {
     const batch = validBatch();
     batch.installationId = '41100ab3-8d63-1053-b485-33e3d0188787';
@@ -80,5 +113,18 @@ describe('parseTelemetryBatchV1', () => {
     const batch = validBatch();
     batch.sentAt = 'Sun, 27 Sep 2026 08:15:00 GMT';
     expect(() => parseTelemetryBatchV1(batch, NOW)).toThrow();
+  });
+});
+
+describe('isSameUuid', () => {
+  const lower = '41100ab3-8d63-4053-b485-33e3d0188787';
+
+  it('matches regardless of case so a retried requestId still deduplicates', () => {
+    expect(isSameUuid(lower, lower.toUpperCase())).toBe(true);
+    expect(isSameUuid(lower.toUpperCase(), lower)).toBe(true);
+  });
+
+  it('still separates genuinely different installations', () => {
+    expect(isSameUuid(lower, 'c630a0a8-9f48-4bf7-8479-51bddf804cbb')).toBe(false);
   });
 });

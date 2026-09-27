@@ -6,7 +6,7 @@ import {
   MAX_STORED_COUNTER,
   SCHEMA_VERSION,
 } from '@/lib/telemetry/constants';
-import type { TelemetryBatchRequestV1 } from '@/lib/telemetry/schema';
+import { isSameUuid, type TelemetryBatchRequestV1 } from '@/lib/telemetry/schema';
 import { prisma } from './db';
 
 export class RequestIdConflictError extends Error {}
@@ -58,7 +58,7 @@ export async function acceptTelemetryBatch(batch: TelemetryBatchRequestV1, now =
         where: { requestId: batch.requestId },
         select: { installationId: true },
       });
-      if (!existing || existing.installationId !== batch.installationId) {
+      if (!existing || !isSameUuid(existing.installationId, batch.installationId)) {
         throw new RequestIdConflictError();
       }
       return;
