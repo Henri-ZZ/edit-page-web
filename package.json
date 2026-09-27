@@ -9,7 +9,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "vercel-build": "prisma migrate deploy && astro build",
+    "vercel-build": "node scripts/prepare-telemetry-database.mjs && prisma migrate deploy && astro build",
     "postinstall": "prisma generate",
     "preview": "astro preview",
     "test": "vitest run",

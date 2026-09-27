@@ -1,0 +1,6 @@
+-- Baseline marker for the legacy Neon database.
+--
+-- This migration is recorded as already applied by
+-- scripts/prepare-telemetry-database.mjs when a database has no Prisma
+-- migration history. The following migration replaces the old telemetry
+-- tables; legacy data is intentionally not migrated.

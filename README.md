@@ -22,7 +22,8 @@ npm run dev
     - `PADDLE_PRICE_LIFETIME`
     - `DATABASE_URL`
     - `CRON_SECRET`
-5. 部署时 `vercel-build` 会先执行 `prisma migrate deploy`，再构建网站
+5. 首次部署会为没有 Prisma 历史的旧数据库自动登记 baseline；随后
+   `vercel-build` 会执行 `prisma migrate deploy` 并构建网站
 6. 部署完成
 
 ## Vercel 环境变量
