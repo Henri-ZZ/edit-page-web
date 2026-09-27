@@ -16,11 +16,14 @@ npm run dev
 3. Node.js 版本：`package.json` 的 `engines.node` 已固定为 `24.x`，它会覆盖 Vercel 的
    `Settings > General > Node.js Version` 设置，无需手动改后台。
    Vercel 已计划在 2026-10-01 停用 Node 20，升级后请确认部署使用的是 24。
-4. 在 Vercel 的 `Settings > Environment Variables` 配置前端结账所需的环境变量：
+4. 在 Vercel 的 `Settings > Environment Variables` 配置环境变量：
     - `PADDLE_ENVIRONMENT`
     - `PADDLE_CLIENT_TOKEN`
     - `PADDLE_PRICE_LIFETIME`
-5. 部署完成
+    - `DATABASE_URL`
+    - `CRON_SECRET`
+5. 部署时 `vercel-build` 会先执行 `prisma migrate deploy`，再构建网站
+6. 部署完成
 
 ## Vercel 环境变量
 
@@ -32,6 +35,46 @@ npm run dev
   填 Paddle 对应环境的 client-side token。Sandbox 通常形如 `test_...`，正式环境通常形如 `live_...`
 - `PADDLE_PRICE_LIFETIME`
   填 Paddle 里的 lifetime 价格 ID
+
+遥测 API 使用：
+
+- `DATABASE_URL`
+  Neon Postgres 连接地址，仅在服务端使用
+- `CRON_SECRET`
+  用于保护每日数据保留清理任务的长随机字符串
+
+## 遥测 API
+
+接口为 `POST /api/telemetry/v1/batch`，协议及隐私边界见
+[`docs/EDIT_PAGE_TELEMETRY_SPEC.md`](docs/EDIT_PAGE_TELEMETRY_SPEC.md)。
+
+数据库初始化：
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+旧 Neon 数据无需保留时，可在确认数据库地址无误后执行以下破坏性命令，重建当前 schema：
+
+```bash
+npm run db:reset
+```
+
+接口采用与 Licentra 相同的普通 CORS 调用方式：只为
+`chrome-extension://`、`moz-extension://`、`safari-web-extension://` 和
+`extension://` Origin 返回跨域响应头，不使用 Cookie。插件调用此接口无需在 manifest
+里声明 `editpage.henriz.dev` 的 `host_permissions`。普通网页 Origin 会被拒绝。
+
+每日 Vercel Cron 会删除超过 30 天的幂等请求记录，以及超过 13 个月的汇总使用数据和非活跃安装记录。
+
+## 检查
+
+```bash
+npx tsc --noEmit
+npm test
+npm run build
+```
 
 ## 目录结构
 

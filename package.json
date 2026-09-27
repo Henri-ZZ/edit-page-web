@@ -9,10 +9,23 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "vercel-build": "prisma migrate deploy && astro build",
+    "postinstall": "prisma generate",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset"
   },
   "dependencies": {
     "@astrojs/vercel": "^7.8.2",
-    "astro": "^4.0.0"
+    "@prisma/client": "^6.19.0",
+    "astro": "^4.0.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "prisma": "^6.19.0",
+    "vitest": "^3.2.4"
   }
 }

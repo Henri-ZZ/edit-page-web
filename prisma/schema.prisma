@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Installation {
+  id                  String             @id @default(cuid())
+  installationId      String             @unique @db.Uuid
+  firstSeenAt         DateTime           @default(now()) @db.Timestamptz(3)
+  lastSeenAt          DateTime           @default(now()) @db.Timestamptz(3)
+  firstVersion        String             @db.VarChar(32)
+  currentVersion      String             @db.VarChar(32)
+  browser             String             @db.VarChar(32)
+  browserMajorVersion Int?
+  os                  String             @db.VarChar(16)
+  locale              String             @db.VarChar(35)
+  distribution        String             @db.VarChar(32)
+  licenseType         String             @db.VarChar(16)
+  usageDaily          UsageDaily[]
+  telemetryRequests   TelemetryRequest[]
+
+  @@index([lastSeenAt])
+  @@index([currentVersion])
+  @@index([licenseType])
+}
+
+model UsageDaily {
+  id             String       @id @default(cuid())
+  installationId String       @db.Uuid
+  date           DateTime     @db.Date
+  events         Json         @default("{}") @db.JsonB
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  installation   Installation @relation(fields: [installationId], references: [installationId], onDelete: Cascade)
+
+  @@unique([installationId, date])
+  @@index([date])
+}
+
+model TelemetryRequest {
+  requestId      String       @id @db.Uuid
+  installationId String       @db.Uuid
+  acceptedAt     DateTime     @default(now()) @db.Timestamptz(3)
+  installation   Installation @relation(fields: [installationId], references: [installationId], onDelete: Cascade)
+
+  @@index([acceptedAt])
+  @@index([installationId])
+}

@@ -58,5 +58,18 @@ export default defineConfig({
     routing: {
       prefixDefaultLocale: false
     }
+  },
+  // Astro 4's Vite dev server answers OPTIONS before API route handlers.
+  // Reflect only extension origins in development so the extension can call
+  // localhost without adding a host permission, matching production CORS.
+  vite: {
+    server: {
+      cors: {
+        origin: /^(?:(?:chrome|moz|safari-web)-extension|extension):\/\/[a-z0-9._-]+$/i,
+        methods: ['POST', 'OPTIONS'],
+        allowedHeaders: ['Content-Type'],
+        maxAge: 86400,
+      },
+    },
   }
 });
