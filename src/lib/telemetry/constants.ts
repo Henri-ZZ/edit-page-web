@@ -10,6 +10,7 @@ export const MAX_ACCEPTED_BATCHES_PER_INSTALLATION_PER_DAY = 48;
 export const MAX_STORED_COUNTER = Number.MAX_SAFE_INTEGER;
 
 export const TELEMETRY_EVENTS = [
+  'dashboard.open',
   'edit.start',
   'text.edit',
   'format.bold',
@@ -29,9 +30,13 @@ export const TELEMETRY_EVENTS = [
   'screenshot.download',
   'monetization.free_limit_reached',
   'monetization.upgrade_shown',
+  'monetization.learn_premium_clicked',
   'monetization.activation_started',
   'monetization.activation_succeeded',
   'monetization.activation_failed',
+  'monetization.checkin_succeeded',
+  'support.review_clicked',
+  'support.feedback_clicked',
 ] as const;
 
 export const ACTIVATION_FAILURE_REASONS = [

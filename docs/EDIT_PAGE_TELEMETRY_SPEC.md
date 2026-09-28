@@ -144,6 +144,7 @@ These are the complete schema-v1 event keys:
 
 ```ts
 export const TELEMETRY_EVENTS = [
+  'dashboard.open',
   'edit.start',
   'text.edit',
   'format.bold',
@@ -163,9 +164,13 @@ export const TELEMETRY_EVENTS = [
   'screenshot.download',
   'monetization.free_limit_reached',
   'monetization.upgrade_shown',
+  'monetization.learn_premium_clicked',
   'monetization.activation_started',
   'monetization.activation_succeeded',
   'monetization.activation_failed',
+  'monetization.checkin_succeeded',
+  'support.review_clicked',
+  'support.feedback_clicked',
 ] as const;
 
 export type TelemetryEventName = (typeof TELEMETRY_EVENTS)[number];
@@ -189,6 +194,7 @@ export type ActivationFailureReason =
 
 | Event | Increment exactly when |
 |---|---|
+| `dashboard.open` | The extension Dashboard finishes opening. Count once per page load. |
 | `edit.start` | Edit mode transitions from inactive to active. Repeated clicks while already active do not count. |
 | `text.edit` | A text-edit operation is committed, normally on blur/Enter/end-of-edit, and content actually changed. Do not count each keystroke. |
 | `format.*` | The corresponding formatting command is successfully applied once. Do not include values, colors, font sizes, selected text, or target details. |
@@ -201,9 +207,13 @@ export type ActivationFailureReason =
 | `screenshot.download` | The screenshot download is successfully initiated/confirmed by the browser API. A failed/cancelled preparation does not count. |
 | `monetization.free_limit_reached` | A product action is blocked by the configured free-tier limit. Count once per blocked action, not per render/re-render. |
 | `monetization.upgrade_shown` | The upgrade UI becomes visible due to a product flow. Count once per presentation, not per component render. |
+| `monetization.learn_premium_clicked` | The user clicks the Dashboard's Learn about Premium button. |
 | `monetization.activation_started` | A user explicitly submits an activation attempt. |
 | `monetization.activation_succeeded` | Licentra confirms activation and local premium state is committed. |
 | `monetization.activation_failed` | An attempted activation reaches a terminal failure. It MUST carry exactly one approved reason counter; raw error messages/codes are forbidden. |
+| `monetization.checkin_succeeded` | The client completed a check-in round-trip with Licentra and the license was confirmed valid. MUST NOT count skipped check-ins (signature still fresh, no request sent) or offline-grace fallbacks (server unreachable) — those are not successful round-trips. Distinct from the `activation_*` events, which describe a user-submitted activation and MUST NOT be emitted by the heartbeat. |
+| `support.review_clicked` | The user clicks the Dashboard's Leave Review button. |
+| `support.feedback_clicked` | The user clicks the Dashboard's Send Feedback button. |
 
 All counters MUST be non-negative integers. For schema v1, ordinary event counters are stored by event name. Activation failures additionally use a bounded reason key such as `monetization.activation_failed.network_error`; the server derives this key only after enum validation. No general-purpose event properties are allowed.
 
@@ -287,12 +297,26 @@ export interface DailyUsageV1 {
   events: Partial<Record<TelemetryCounterKey, number>>;
 }
 
+export interface TelemetrySettingsV1 {
+  languagePreference: 'browser' | SupportedInterfaceLanguage;
+  screenshotDestination: 'clipboard' | 'download';
+  hideRepeatedElements: boolean;
+  selectionToolbarEnabled: boolean;
+}
+
+export interface TelemetryOptionalPermissionsV1 {
+  clipboardWrite: boolean;
+  downloads: boolean;
+}
+
 export interface TelemetryBatchRequestV1 {
   schemaVersion: 1;
   requestId: string; // random UUID; stable across retries of this snapshot
   installationId: string; // random UUID
   sentAt: string; // ISO 8601 client diagnostic time, bounded by server validation
   environment: TelemetryEnvironmentV1;
+  settings?: TelemetrySettingsV1; // optional only for compatibility with older clients/in-flight batches
+  optionalPermissions?: TelemetryOptionalPermissionsV1; // never include origins or the complete permission set
   usage: DailyUsageV1[]; // e.g. 1..7 days of unique UTC dates (order is normalized server-side)
 }
 
@@ -320,6 +344,16 @@ export interface TelemetryBatchResponseV1 {
     "locale": "en-US",
     "distribution": "chrome_web_store",
     "licenseType": "premium"
+  },
+  "settings": {
+    "languagePreference": "browser",
+    "screenshotDestination": "download",
+    "hideRepeatedElements": true,
+    "selectionToolbarEnabled": true
+  },
+  "optionalPermissions": {
+    "clipboardWrite": true,
+    "downloads": false
   },
   "usage": [
     {
@@ -392,6 +426,8 @@ model Installation {
   locale              String       @db.VarChar(35)
   distribution        String       @db.VarChar(32)
   licenseType         String       @db.VarChar(16)
+  settings            Json         @default("{}") @db.JsonB
+  optionalPermissions Json         @default("{}") @db.JsonB
   usageDaily          UsageDaily[]
   telemetryRequests   TelemetryRequest[]
 

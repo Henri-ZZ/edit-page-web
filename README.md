@@ -5,8 +5,8 @@ Astro 官网，支持中英文。
 ## 开发
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## 部署到 Vercel
@@ -52,14 +52,14 @@ npm run dev
 数据库初始化：
 
 ```bash
-npm run db:generate
-npm run db:migrate
+pnpm db:generate
+pnpm db:migrate
 ```
 
 旧 Neon 数据无需保留时，可在确认数据库地址无误后执行以下破坏性命令，重建当前 schema：
 
 ```bash
-npm run db:reset
+pnpm db:reset
 ```
 
 接口采用与 Licentra 相同的普通 CORS 调用方式：只为
@@ -72,9 +72,9 @@ npm run db:reset
 ## 检查
 
 ```bash
-npx tsc --noEmit
-npm test
-npm run build
+pnpm exec tsc --noEmit
+pnpm test
+pnpm build
 ```
 
 ## 目录结构

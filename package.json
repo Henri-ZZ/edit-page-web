@@ -2,6 +2,7 @@
   "name": "edit-page-web",
   "type": "module",
   "version": "1.0.0",
+  "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": "24.x"
   },
@@ -9,18 +10,18 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "vercel-build": "node scripts/prepare-telemetry-database.mjs && prisma migrate deploy && astro build",
+    "vercel-build": "pnpm db:migrate && astro build",
     "postinstall": "prisma generate",
     "preview": "astro preview",
     "test": "vitest run",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate deploy",
+    "db:migrate": "node scripts/prepare-telemetry-database.mjs && prisma migrate deploy",
     "db:reset": "prisma migrate reset"
   },
   "dependencies": {
     "@astrojs/vercel": "^7.8.2",
     "@prisma/client": "^6.19.0",
-    "astro": "^4.0.0",
+    "astro": "^4.16.19",
     "zod": "^3.25.76"
   },
   "devDependencies": {

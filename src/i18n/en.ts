@@ -94,7 +94,7 @@ export default {
         title: '1. Data Collection',
         content: [
           'Edit Page is designed to collect as little data as possible.',
-          'We collect a random, resettable installation identifier; the extension version; normalized browser, operating system, language, and distribution information; free or premium status; and daily aggregate counters showing which Edit Page features and activation outcomes are used. We do not collect individual clicks or a timeline of your activity.',
+          'We collect a random, resettable installation identifier; the extension version; normalized browser, operating system, language, and distribution information; free or premium status; daily aggregate counters showing which Edit Page features and activation outcomes are used; an explicit allowlist of current preferences; and whether the optional clipboard-write and download permissions are currently granted. The preference allowlist contains interface language choice, screenshot destination, whether repeated elements are hidden in full-page screenshots, and whether the text-selection toolbar is enabled. We do not collect the extension\'s complete stored data, granted website origins, individual clicks, or a timeline of your activity.',
           'We do not collect the websites you visit, browsing history, webpage content, text you edit, images you replace, screenshots you create, passwords, form contents, or clipboard contents.'
         ]
       },

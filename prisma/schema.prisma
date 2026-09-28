@@ -20,6 +20,8 @@ model Installation {
   locale              String             @db.VarChar(35)
   distribution        String             @db.VarChar(32)
   licenseType         String             @db.VarChar(16)
+  settings            Json               @default("{}") @db.JsonB
+  optionalPermissions Json               @default("{}") @db.JsonB
   usageDaily          UsageDaily[]
   telemetryRequests   TelemetryRequest[]
 

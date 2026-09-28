@@ -17,8 +17,8 @@ try {
   if (!result?.exists) {
     console.log(`No Prisma migration history found; recording ${BASELINE_MIGRATION}.`);
     const resolved = spawnSync(
-      'npx',
-      ['prisma', 'migrate', 'resolve', '--applied', BASELINE_MIGRATION],
+      'pnpm',
+      ['exec', 'prisma', 'migrate', 'resolve', '--applied', BASELINE_MIGRATION],
       { stdio: 'inherit', env: process.env },
     );
     if (resolved.error) throw resolved.error;

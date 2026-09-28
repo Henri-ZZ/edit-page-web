@@ -19,6 +19,8 @@ function startOfUtcDay(date: Date): Date {
 export async function acceptTelemetryBatch(batch: TelemetryBatchRequestV1, now = new Date()) {
   await prisma.$transaction(async (tx) => {
     const environment = batch.environment;
+    const settings = batch.settings;
+    const optionalPermissions = batch.optionalPermissions;
     await tx.installation.upsert({
       where: { installationId: batch.installationId },
       create: {
@@ -33,6 +35,8 @@ export async function acceptTelemetryBatch(batch: TelemetryBatchRequestV1, now =
         locale: environment.locale,
         distribution: environment.distribution,
         licenseType: environment.licenseType,
+        settings: settings ?? {},
+        optionalPermissions: optionalPermissions ?? {},
       },
       update: {
         lastSeenAt: now,
@@ -43,6 +47,8 @@ export async function acceptTelemetryBatch(batch: TelemetryBatchRequestV1, now =
         locale: environment.locale,
         distribution: environment.distribution,
         licenseType: environment.licenseType,
+        ...(settings ? { settings } : {}),
+        ...(optionalPermissions ? { optionalPermissions } : {}),
       },
     });
 

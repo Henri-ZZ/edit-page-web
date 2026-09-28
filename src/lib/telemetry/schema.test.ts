@@ -19,6 +19,16 @@ function validBatch(): TelemetryBatchRequestV1 {
       distribution: 'chrome_web_store',
       licenseType: 'premium',
     },
+    settings: {
+      languagePreference: 'browser',
+      screenshotDestination: 'download',
+      hideRepeatedElements: true,
+      selectionToolbarEnabled: false,
+    },
+    optionalPermissions: {
+      clipboardWrite: true,
+      downloads: false,
+    },
     usage: [{
       date: '2026-09-26',
       events: {
@@ -34,7 +44,50 @@ describe('parseTelemetryBatchV1', () => {
   it('returns a fresh normalized allowlisted object', () => {
     const parsed = parseTelemetryBatchV1(validBatch(), NOW);
     expect(parsed.environment.locale).toBe('en-US');
+    expect(parsed.settings).toEqual({
+      languagePreference: 'browser',
+      screenshotDestination: 'download',
+      hideRepeatedElements: true,
+      selectionToolbarEnabled: false,
+    });
+    expect(parsed.optionalPermissions).toEqual({
+      clipboardWrite: true,
+      downloads: false,
+    });
     expect(parsed.usage[0].events['text.edit']).toBe(18);
+  });
+
+  it('accepts old batches without settings during rollout', () => {
+    const batch = validBatch();
+    delete batch.settings;
+    delete batch.optionalPermissions;
+    const parsed = parseTelemetryBatchV1(batch, NOW);
+    expect(parsed.settings).toBeUndefined();
+    expect(parsed.optionalPermissions).toBeUndefined();
+  });
+
+  it('rejects unknown optional permissions and non-boolean states', () => {
+    const unknown = validBatch() as TelemetryBatchRequestV1 & {
+      optionalPermissions: Record<string, unknown>;
+    };
+    unknown.optionalPermissions.tabs = true;
+    expect(() => parseTelemetryBatchV1(unknown, NOW)).toThrow();
+
+    const invalid = validBatch();
+    invalid.optionalPermissions!.downloads = 'yes' as unknown as boolean;
+    expect(() => parseTelemetryBatchV1(invalid, NOW)).toThrow();
+  });
+
+  it('rejects unknown settings and invalid setting values', () => {
+    const unknown = validBatch() as TelemetryBatchRequestV1 & {
+      settings: Record<string, unknown>;
+    };
+    unknown.settings.unreviewedPreference = true;
+    expect(() => parseTelemetryBatchV1(unknown, NOW)).toThrow();
+
+    const invalid = validBatch();
+    invalid.settings!.screenshotDestination = 'cloud' as 'download';
+    expect(() => parseTelemetryBatchV1(invalid, NOW)).toThrow();
   });
 
   it.each(['url', 'pageTitle', 'selectedText', 'html', 'imageUrl', 'licenseKey', 'fingerprint'])(
@@ -54,6 +107,17 @@ describe('parseTelemetryBatchV1', () => {
     const unqualified = validBatch();
     unqualified.usage[0].events = { 'monetization.activation_failed': 1 };
     expect(() => parseTelemetryBatchV1(unqualified, NOW)).toThrow();
+  });
+
+  it.each([
+    'dashboard.open',
+    'monetization.learn_premium_clicked',
+    'support.review_clicked',
+    'support.feedback_clicked',
+  ])('accepts the dashboard event %s', (event) => {
+    const batch = validBatch();
+    batch.usage[0].events = { [event]: 1 };
+    expect(parseTelemetryBatchV1(batch, NOW).usage[0].events[event]).toBe(1);
   });
 
   it('rejects duplicate, stale, and empty usage days', () => {

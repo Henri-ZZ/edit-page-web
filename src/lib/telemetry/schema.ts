@@ -49,12 +49,35 @@ const dailyUsageSchema = z.object({
   events: z.record(z.number().int().min(0).max(MAX_COUNTER_PER_KEY_PER_BATCH)),
 }).strict();
 
+// This is an explicit telemetry allowlist, not a mirror of extension storage.
+// Adding a preference to the extension does not make it collectible: every new
+// field must be reviewed and added here separately.
+const settingsSchema = z.object({
+  languagePreference: z.enum([
+    'browser', 'ar', 'cs', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he',
+    'hi', 'hu', 'id', 'it', 'ja', 'ko', 'ms', 'nl', 'no', 'pl', 'pt-BR',
+    'ro', 'ru', 'sv', 'th', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW',
+  ]),
+  screenshotDestination: z.enum(['clipboard', 'download']),
+  hideRepeatedElements: z.boolean(),
+  selectionToolbarEnabled: z.boolean(),
+}).strict();
+
+const optionalPermissionsSchema = z.object({
+  clipboardWrite: z.boolean(),
+  downloads: z.boolean(),
+}).strict();
+
 const requestSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
   requestId: z.string().regex(UUID_V4),
   installationId: z.string().regex(UUID_V4),
   sentAt: z.string().datetime({ offset: true }).max(35),
   environment: environmentSchema,
+  // Optional during rollout so older extension versions and already persisted
+  // in-flight batches remain valid. Current clients always include all fields.
+  settings: settingsSchema.optional(),
+  optionalPermissions: optionalPermissionsSchema.optional(),
   usage: z.array(dailyUsageSchema).min(1).max(MAX_USAGE_DAYS),
 }).strict();
 
@@ -75,12 +98,17 @@ export interface DailyUsageV1 {
   events: Record<TelemetryCounterKey, number>;
 }
 
+export type TelemetrySettingsV1 = z.infer<typeof settingsSchema>;
+export type TelemetryOptionalPermissionsV1 = z.infer<typeof optionalPermissionsSchema>;
+
 export interface TelemetryBatchRequestV1 {
   schemaVersion: 1;
   requestId: string;
   installationId: string;
   sentAt: string;
   environment: TelemetryEnvironmentV1;
+  settings?: TelemetrySettingsV1;
+  optionalPermissions?: TelemetryOptionalPermissionsV1;
   usage: DailyUsageV1[];
 }
 
@@ -168,6 +196,8 @@ export function parseTelemetryBatchV1(raw: unknown, now = new Date()): Telemetry
     installationId: parsed.installationId,
     sentAt: new Date(sentAtMs).toISOString(),
     environment: { ...parsed.environment, locale },
+    ...(parsed.settings ? { settings: parsed.settings } : {}),
+    ...(parsed.optionalPermissions ? { optionalPermissions: parsed.optionalPermissions } : {}),
     usage,
   };
 }
