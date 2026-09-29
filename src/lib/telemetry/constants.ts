@@ -65,5 +65,5 @@ export const ALLOWED_COUNTER_KEYS = new Set<string>([
 
 export const BROWSERS = ['chrome', 'edge', 'brave', 'opera', 'vivaldi', 'other_chromium'] as const;
 export const OPERATING_SYSTEMS = ['windows', 'mac', 'linux', 'chromeos', 'android', 'other'] as const;
-export const DISTRIBUTIONS = ['chrome_web_store', 'edge_addons', 'direct', 'development'] as const;
+export const MAX_DISTRIBUTION_LENGTH = 32;
 export const LICENSE_TYPES = ['free', 'premium'] as const;

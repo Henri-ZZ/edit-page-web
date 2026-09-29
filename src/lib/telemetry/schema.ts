@@ -3,10 +3,10 @@ import { z } from 'zod';
 import {
   ALLOWED_COUNTER_KEYS,
   BROWSERS,
-  DISTRIBUTIONS,
   LICENSE_TYPES,
   MAX_COUNTER_PER_KEY_PER_BATCH,
   MAX_EVENT_AGE_DAYS,
+  MAX_DISTRIBUTION_LENGTH,
   MAX_FUTURE_DATE_DAYS,
   MAX_SENT_AT_AGE_DAYS,
   MAX_TOTAL_COUNTERS_PER_BATCH,
@@ -40,7 +40,7 @@ const environmentSchema = z.object({
   browserMajorVersion: z.number().int().min(1).max(999).optional(),
   os: z.enum(OPERATING_SYSTEMS),
   locale: z.string().min(2).max(35),
-  distribution: z.enum(DISTRIBUTIONS),
+  distribution: z.string().trim().min(1).max(MAX_DISTRIBUTION_LENGTH),
   licenseType: z.enum(LICENSE_TYPES),
 }).strict();
 
@@ -89,7 +89,7 @@ export interface TelemetryEnvironmentV1 {
   browserMajorVersion?: number;
   os: (typeof OPERATING_SYSTEMS)[number];
   locale: string;
-  distribution: (typeof DISTRIBUTIONS)[number];
+  distribution: string;
   licenseType: (typeof LICENSE_TYPES)[number];
 }
 

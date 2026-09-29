@@ -118,7 +118,7 @@ Each batch includes the current normalized environment:
 | `browserMajorVersion` | integer | `1..999`, or omit if not reliably known | User-Agent Client Hints when available; carefully parsed UA fallback |
 | `os` | enum | `windows`, `mac`, `linux`, `chromeos`, `android`, `other` | `chrome.runtime.getPlatformInfo()` preferred |
 | `locale` | string | normalized BCP 47-like tag, max 35 chars | `chrome.i18n.getUILanguage()` preferred |
-| `distribution` | enum | build-owned channel, e.g. `chrome_web_store`, `edge_addons`, `direct`, `development` | build-time constant only |
+| `distribution` | string | 1–32 character build-owned channel, e.g. `cws` or `edge` | build-time constant only |
 | `licenseType` | enum | `free`, `premium` | minimized licensing adapter |
 
 Detection MUST fail closed to an approved `other`/omitted value; it MUST NOT send raw user-agent strings or platform strings.
@@ -288,7 +288,7 @@ export interface TelemetryEnvironmentV1 {
   browserMajorVersion?: number;
   os: 'windows' | 'mac' | 'linux' | 'chromeos' | 'android' | 'other';
   locale: string;
-  distribution: 'chrome_web_store' | 'edge_addons' | 'direct' | 'development';
+  distribution: string; // non-empty, at most 32 characters; e.g. 'cws' or 'edge'
   licenseType: 'free' | 'premium';
 }
 
@@ -342,7 +342,7 @@ export interface TelemetryBatchResponseV1 {
     "browserMajorVersion": 151,
     "os": "windows",
     "locale": "en-US",
-    "distribution": "chrome_web_store",
+    "distribution": "cws",
     "licenseType": "premium"
   },
   "settings": {
@@ -396,7 +396,8 @@ Validation requirements:
 - reject non-JSON, oversized, deeply nested, or malformed bodies before application handling;
 - require `schemaVersion === 1`; route future versions explicitly;
 - strict UUID validation for `requestId` and `installationId`;
-- strict enums for browser, OS, distribution, license type, event name, and activation failure reason;
+- strict enums for browser, OS, license type, event name, and activation failure reason;
+- a non-empty distribution string of at most 32 characters;
 - reject unknown top-level, environment, daily-usage, and event keys (or discard them before any storage/logging); strict rejection is preferred because it reveals client bugs;
 - cap string lengths and normalize locale; never persist raw invalid values;
 - counters must be safe integers, `0..1_000_000` per key per batch; omit/ignore zero;
@@ -662,7 +663,7 @@ Do not claim “anonymous” if a persistent installation ID is used. Prefer “
 ### 19.2 Build/environment tests
 
 - each store build embeds the expected distribution constant;
-- Edge runtime + CWS build reports `browser=edge`, `distribution=chrome_web_store`;
+- Edge runtime + CWS build reports `browser=edge`, `distribution=cws`;
 - version, browser major, OS, and locale normalization reject raw/unbounded values;
 - no raw UA is sent.
 

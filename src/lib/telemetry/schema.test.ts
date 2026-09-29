@@ -16,7 +16,7 @@ function validBatch(): TelemetryBatchRequestV1 {
       browserMajorVersion: 151,
       os: 'windows',
       locale: 'en-us',
-      distribution: 'chrome_web_store',
+      distribution: 'cws',
       licenseType: 'premium',
     },
     settings: {
@@ -64,6 +64,26 @@ describe('parseTelemetryBatchV1', () => {
     const parsed = parseTelemetryBatchV1(batch, NOW);
     expect(parsed.settings).toBeUndefined();
     expect(parsed.optionalPermissions).toBeUndefined();
+  });
+
+  it.each(['cws', 'edge', 'partner-preview'])('accepts distribution channel %s', (distribution) => {
+    const batch = validBatch();
+    batch.environment.distribution = distribution;
+    expect(parseTelemetryBatchV1(batch, NOW).environment.distribution).toBe(distribution);
+  });
+
+  it('normalizes surrounding whitespace and rejects invalid distribution values', () => {
+    const padded = validBatch();
+    padded.environment.distribution = '  cws  ';
+    expect(parseTelemetryBatchV1(padded, NOW).environment.distribution).toBe('cws');
+
+    const empty = validBatch();
+    empty.environment.distribution = '   ';
+    expect(() => parseTelemetryBatchV1(empty, NOW)).toThrow();
+
+    const tooLong = validBatch();
+    tooLong.environment.distribution = 'x'.repeat(33);
+    expect(() => parseTelemetryBatchV1(tooLong, NOW)).toThrow();
   });
 
   it('rejects unknown optional permissions and non-boolean states', () => {
