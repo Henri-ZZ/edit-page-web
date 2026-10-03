@@ -6,7 +6,12 @@ const { recordUninstall } = vi.hoisted(() => ({
 
 vi.mock('@/lib/server/telemetry-store', () => ({ recordUninstall }));
 
-import { GET } from './uninstall';
+// Imported from src/pages rather than colocated with it, on purpose: Astro turns
+// every file under src/pages into a route, and under `output: 'hybrid'` a route
+// without `export const prerender = false` is *executed during the build*. A
+// *.test.ts file there imports vitest at build time and fails the deploy with
+// "Vitest failed to access its internal state". Keep tests out of src/pages.
+import { GET } from '@/pages/api/telemetry/v1/uninstall';
 
 const INSTALLATION_ID = '41100ab3-8d63-4053-b485-33e3d0188787';
 
