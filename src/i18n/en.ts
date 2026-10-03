@@ -88,13 +88,13 @@ export default {
   },
   privacy: {
     title: 'Privacy Policy',
-    lastUpdated: 'Last Updated: September 2026',
+    lastUpdated: 'Last Updated: October 2026',
     sections: [
       {
         title: '1. Data Collection',
         content: [
           'Edit Page is designed to collect as little data as possible.',
-          'We collect a random, resettable installation identifier; the extension version; normalized browser, operating system, language, and distribution information; free or premium status; daily aggregate counters showing which Edit Page features and activation outcomes are used; an explicit allowlist of current preferences; and whether the optional clipboard-write and download permissions are currently granted. The preference allowlist contains interface language choice, screenshot destination, whether repeated elements are hidden in full-page screenshots, and whether the text-selection toolbar is enabled. We do not collect the extension\'s complete stored data, granted website origins, individual clicks, or a timeline of your activity.',
+          'We collect a random, resettable installation identifier; the extension version; normalized browser, operating system, language, and distribution information; free or premium status; daily aggregate counters showing which Edit Page features and activation outcomes are used; an explicit allowlist of current preferences; and whether the optional clipboard-write and download permissions are currently granted. The preference allowlist contains interface language choice, screenshot destination, whether repeated elements are hidden in full-page screenshots, and whether the text-selection toolbar is enabled. We also record when the extension was installed. If you uninstall Edit Page, the browser opens one final page on our website, and that request records the removal against the same random installation identifier so we can measure how many installations are removed. We do not collect the extension\'s complete stored data, granted website origins, individual clicks, or a timeline of your activity.',
           'We do not collect the websites you visit, browsing history, webpage content, text you edit, images you replace, screenshots you create, passwords, form contents, or clipboard contents.'
         ]
       },
@@ -124,7 +124,7 @@ export default {
         title: '5. Retention and Your Choices',
         content: [
           'Daily aggregate usage data and inactive installation records are retained for up to 13 months. Request identifiers used only to prevent duplicate counting are retained for up to 30 days. Infrastructure security logs are kept separate from analytics and retained for the shortest practical period.',
-          'The limited product telemetry described in this policy is collected automatically and Edit Page currently does not offer a separate telemetry opt-out. Uninstalling Edit Page stops collection. Clearing the extension\'s local storage resets its random installation identifier. You may contact us with privacy questions or requests.'
+          'The limited product telemetry described in this policy is collected automatically and Edit Page currently does not offer a separate telemetry opt-out. Uninstalling Edit Page stops collection, apart from the single goodbye-page request described above, which only records that the installation was removed. Clearing the extension\'s local storage resets its random installation identifier. You may contact us with privacy questions or requests.'
         ]
       }
     ],

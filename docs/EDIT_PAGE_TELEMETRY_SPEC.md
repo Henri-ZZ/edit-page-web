@@ -21,7 +21,7 @@ The system MUST:
 
 - generate a random, resettable installation identifier;
 - aggregate counters locally in the extension;
-- upload compact batches approximately every 12–24 hours;
+- upload compact batches on a bounded schedule: at most one request per hour per installation, never one per user action, with a 6–8-hour fallback timer;
 - validate and minimize data again at the API boundary;
 - store installation metadata and daily aggregate counters in Neon/Postgres;
 - make retries idempotent so a batch is counted at most once;
@@ -133,8 +133,11 @@ The server owns authoritative timestamps:
 - `lastSeenAt`: timestamp of the most recently accepted batch; monotonically updated by the server.
 - `firstVersion`: `extensionVersion` in the first accepted batch; immutable.
 - `currentVersion`: version in the most recently accepted batch.
+- `uninstalledAt`: set once, from the browser-opened post-uninstall URL (§9.4); written only while null, so a reload or a replayed request cannot move it.
 
-Clients MUST NOT send `firstSeenAt` or `lastSeenAt`. Clients send their current extension version and the server derives both version lifecycle fields. A client-provided date is used only to allocate usage to a day after the server checks its bounded clock skew; it never controls lifecycle timestamps.
+Clients MUST NOT send `firstSeenAt`, `lastSeenAt`, or `uninstalledAt`. Clients send their current extension version and the server derives both version lifecycle fields. A client-provided date is used only to allocate usage to a day after the server checks its bounded clock skew; it never controls lifecycle timestamps.
+
+`uninstalledAt` is best-effort and under-counts: it stays null when the uninstall request cannot be delivered (offline, tab closed early, blocked host) and it never fires for a merely disabled extension. A null value MUST NOT be read as proof that an installation is still active, and this field MUST NOT be used to reconstruct a per-user timeline.
 
 ## 7. Event catalog
 
@@ -171,6 +174,7 @@ export const TELEMETRY_EVENTS = [
   'monetization.checkin_succeeded',
   'support.review_clicked',
   'support.feedback_clicked',
+  'lifecycle.installed',
 ] as const;
 
 export type TelemetryEventName = (typeof TELEMETRY_EVENTS)[number];
@@ -214,6 +218,7 @@ export type ActivationFailureReason =
 | `monetization.checkin_succeeded` | The client completed a check-in round-trip with Licentra and the license was confirmed valid. MUST NOT count skipped check-ins (signature still fresh, no request sent) or offline-grace fallbacks (server unreachable) — those are not successful round-trips. Distinct from the `activation_*` events, which describe a user-submitted activation and MUST NOT be emitted by the heartbeat. |
 | `support.review_clicked` | The user clicks the Dashboard's Leave Review button. |
 | `support.feedback_clicked` | The user clicks the Dashboard's Send Feedback button. |
+| `lifecycle.installed` | A newly installed extension reported for the first time. Emitted exactly once per installation, immediately after install and before any feature use, and it is the only counter that may trigger an immediate upload (see §8.2). It anchors `firstSeenAt` to the real install moment and makes install → uninstall measurable for users who never act. |
 
 All counters MUST be non-negative integers. For schema v1, ordinary event counters are stored by event name. Activation failures additionally use a bounded reason key such as `monetization.activation_failed.network_error`; the server derives this key only after enum validation. No general-purpose event properties are allowed.
 
@@ -248,9 +253,13 @@ Counter mutation MUST be centralized. Callers pass a typed constant and, only fo
 
 ### 8.2 Batch schedule
 
-- Flush approximately every 12–24 hours, with random jitter to prevent synchronized traffic.
-- Also attempt a flush on extension startup if the oldest pending data is at least 12 hours old.
+- Uploads MUST stay batched: **no individual user action may cause a request.** A service-worker wake-up MAY flush, but never more than once per hour per installation.
+- Fallback timer: a `chrome.alarms` schedule every 6–8 hours with random jitter, for installations that produce no wake-ups of their own. 6 hours is the minimum guarantee.
+- Wake-triggered flush: on service-worker start, flush when pending data exists, the last attempt is at least one hour old, and no retry backoff is pending. This bounds the unuploaded window to about an hour for an active installation and shrinks what an uninstall can lose.
+- A new installation flushes immediately after recording `lifecycle.installed`, so its `Installation` row exists from the outset. This is the only flush that ignores the one-hour floor, and it happens once per installation.
 - MAY flush when pending counters exceed a conservative threshold (for example 100 distinct day/key entries), but MUST still batch.
+- The per-installation request ceiling MUST stay well below the server limit (`MAX_ACCEPTED_BATCHES_PER_INSTALLATION_PER_DAY`, 48): the one-hour floor caps an active installation at 24 batches/day, plus the single install batch.
+- The `Retry-After` cap MUST NOT be tied to the fallback timer, so shortening the timer can never shorten a backoff the server asked for.
 - Use UTC dates.
 - Do not depend on a background worker remaining alive; use `chrome.alarms` and persisted state.
 - Retry transient failures with exponential backoff plus jitter (for example 15 minutes, 1 hour, 4 hours, 12 hours, capped at 24 hours).
@@ -387,6 +396,41 @@ Response:
 
 Suggested status codes: `200` accepted or already accepted; `400` malformed JSON/schema; `413` too large; `415` wrong content type; `429` rate limited with `Retry-After`; `500/503` transient server failure. A duplicate `requestId` with the same installation returns `200` without applying counters again. A reused `requestId` associated with another installation is rejected.
 
+### 9.4 Post-uninstall signal
+
+```http
+GET /api/telemetry/v1/uninstall?i=<installationId>
+```
+
+`chrome.runtime.setUninstallURL()` makes the **browser** open this URL after the
+extension has been removed, so it is the only uninstall signal that can exist —
+at that moment no extension code is left to send a batch. The response is always
+`302` to the human-facing goodbye page, so the endpoint can never surface an
+error to the user.
+
+| Parameter | Required | Notes |
+|---|---|---|
+| `i` | no | The UUIDv4 `installationId` from local storage. Any other value is ignored. |
+
+Properties:
+
+- exactly one parameter. The URL MUST NOT gain fields that already exist on the
+  stored `Installation` row (version, channel, environment, history);
+- strict UUIDv4 validation, and no other parsing of the request;
+- first-write-wins: the row is updated only while `uninstalledAt` is null, so a
+  page reload or a replayed request cannot inflate the count;
+- an absent, malformed, or unknown id is a silent no-op that creates no rows and
+  returns the same redirect;
+- `lastSeenAt` MUST NOT be touched — it means "last accepted batch";
+- no cookies, no session, no CORS check (a top-level navigation sends no
+  `Origin` header), and `Cache-Control: no-store`;
+- failures MUST be logged without the identifier, the request, or the database
+  message.
+
+Because a GET carries the id in the query string, this is the single documented
+exception to §15's "no identifiers in URLs" rule; that section states the limits
+it must not exceed.
+
 ## 10. Server-side allowlist and validation
 
 The server is the privacy boundary and MUST NOT trust the extension. Use a strict schema validator (for example Zod with strict objects) and construct a fresh sanitized object from accepted values. Do not persist, forward, or log the raw body.
@@ -419,6 +463,7 @@ model Installation {
   installationId      String       @unique @db.Uuid
   firstSeenAt         DateTime     @default(now()) @db.Timestamptz(3)
   lastSeenAt          DateTime     @default(now()) @db.Timestamptz(3)
+  uninstalledAt       DateTime?    @db.Timestamptz(3)
   firstVersion        String       @db.VarChar(32)
   currentVersion      String       @db.VarChar(32)
   browser             String       @db.VarChar(32)
@@ -564,7 +609,7 @@ An HTTP provider necessarily sees a source IP while routing a request. This does
 - Disable request-body logging and query/header dumps for the telemetry route.
 - Access logs SHOULD omit or promptly anonymize IPs when the platform permits.
 - If infrastructure retains security logs, configure the shortest practical documented retention and strictly limit access. Keep them separate from analytics and do not join them by `installationId`.
-- Do not place identifiers or telemetry in URLs; use the POST body.
+- Do not place identifiers or telemetry in URLs; use the POST body. **Sole exception**: the post-uninstall signal (§9.4). The extension no longer exists when that request is made — the browser opens the URL — so a query parameter is the only channel available. It MUST carry exactly one parameter, the UUID `installationId`, MUST NOT gain any other field, and MUST NOT be read from, joined to, or enriched by access logs.
 - Scrub error reporting so validation errors include field names/error classes, not raw values or bodies.
 - Do not set analytics cookies and do not require website session cookies.
 
@@ -598,6 +643,8 @@ The CWS disclosure SHOULD identify collection of **User activity** because aggre
 The public disclosure should plainly state:
 
 - what is collected: random installation ID, extension/browser/OS/locale/distribution, free/premium state, and aggregate feature-use/activation counters;
+- the post-uninstall signal (§9.4): that the browser opened the goodbye URL under the same random installation ID, which is what records that the installation was removed — and that this is the one request carrying an identifier in a URL, which is why it MUST stay limited to a single parameter;
+- the install signal: one `lifecycle.installed` counter, sent when a new installation first reports, which is what makes never-used installations (and their later uninstalls) visible;
 - purpose: product analytics, reliability, feature improvement, and understanding the upgrade funnel;
 - what is not collected, using the prohibited list above in user-friendly language;
 - that page URLs/content, edited content, screenshots, license keys, and fingerprints are not analytics data;
@@ -701,7 +748,7 @@ The feature is ready only when all are true:
 - A new installation receives a random UUID in `chrome.storage.local`; no license/fingerprint value participates.
 - Environment values are normalized and distribution is build-injected.
 - All catalog events use exact documented semantics, including post-success screenshot counting and bounded activation failure reasons.
-- No individual click causes a telemetry request; uploads are persisted 12–24-hour batches with jitter and retry.
+- No individual click causes a telemetry request; uploads are persisted batches rate-limited to at most one per hour per installation, with a 6–8-hour fallback timer, jitter, and retry.
 - Acknowledged batches clear safely; failed/ambiguous batches remain; exact retries are idempotent.
 - The API uses a strict v1 allowlist, bounded inputs, no raw-body logging, and fresh sanitized objects.
 - Prohibited test fields cannot appear in Neon, application logs, analytics, or error reports.

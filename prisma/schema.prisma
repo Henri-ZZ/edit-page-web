@@ -12,6 +12,11 @@ model Installation {
   installationId      String             @unique @db.Uuid
   firstSeenAt         DateTime           @default(now()) @db.Timestamptz(3)
   lastSeenAt          DateTime           @default(now()) @db.Timestamptz(3)
+  // Set once, when the browser opened the post-uninstall URL (§6). Best-effort:
+  // null means "no uninstall observed", which also covers a lost signal, a
+  // disabled extension, and offline delivery failure — it is never proof that
+  // the extension is still installed.
+  uninstalledAt       DateTime?          @db.Timestamptz(3)
   firstVersion        String             @db.VarChar(32)
   currentVersion      String             @db.VarChar(32)
   browser             String             @db.VarChar(32)

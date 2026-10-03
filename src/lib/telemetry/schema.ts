@@ -16,7 +16,9 @@ import {
 } from './constants';
 
 const DAY_MS = 86_400_000;
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+// Exported because the post-uninstall endpoint (see §9.4) validates a query
+// parameter rather than a request body, and must apply the same strict check.
+export const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
  * Compare two validated UUIDs case-insensitively.

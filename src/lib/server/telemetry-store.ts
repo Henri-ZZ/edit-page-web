@@ -12,6 +12,29 @@ import { prisma } from './db';
 export class RequestIdConflictError extends Error {}
 export class TelemetryRateLimitError extends Error {}
 
+/**
+ * Record the post-uninstall signal (§6) for an already-validated UUIDv4.
+ *
+ * Returns whether a row was actually marked. `uninstalledAt: null` in the
+ * filter makes this first-write-wins, so reloading the goodbye page — or
+ * replaying a captured request — can never inflate the count.
+ *
+ * `lastSeenAt` is deliberately left untouched: it means "last accepted batch",
+ * and overwriting it here would corrupt activity reporting. An id with no
+ * stored row is a no-op rather than an error, because the caller must redirect
+ * a real user to the goodbye page regardless.
+ */
+export async function recordUninstall(
+  installationId: string,
+  now = new Date(),
+): Promise<boolean> {
+  const updated = await prisma.installation.updateMany({
+    where: { installationId, uninstalledAt: null },
+    data: { uninstalledAt: now },
+  });
+  return updated.count > 0;
+}
+
 function startOfUtcDay(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }

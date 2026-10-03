@@ -37,6 +37,7 @@ export const TELEMETRY_EVENTS = [
   'monetization.checkin_succeeded',
   'support.review_clicked',
   'support.feedback_clicked',
+  'lifecycle.installed',
 ] as const;
 
 export const ACTIVATION_FAILURE_REASONS = [
