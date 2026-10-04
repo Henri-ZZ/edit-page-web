@@ -24,6 +24,7 @@ function validBatch(): TelemetryBatchRequestV1 {
       screenshotDestination: 'download',
       hideRepeatedElements: true,
       selectionToolbarEnabled: false,
+      replaceImageFit: 'cover',
     },
     optionalPermissions: {
       clipboardWrite: true,
@@ -49,12 +50,21 @@ describe('parseTelemetryBatchV1', () => {
       screenshotDestination: 'download',
       hideRepeatedElements: true,
       selectionToolbarEnabled: false,
+      replaceImageFit: 'cover',
     });
     expect(parsed.optionalPermissions).toEqual({
       clipboardWrite: true,
       downloads: false,
     });
     expect(parsed.usage[0].events['text.edit']).toBe(18);
+  });
+
+  it('accepts settings from clients that predate an optional preference', () => {
+    const batch = validBatch();
+    delete (batch.settings as Record<string, unknown>).replaceImageFit;
+    expect(
+      parseTelemetryBatchV1(batch, NOW).settings?.replaceImageFit,
+    ).toBeUndefined();
   });
 
   it('accepts old batches without settings during rollout', () => {
@@ -127,6 +137,20 @@ describe('parseTelemetryBatchV1', () => {
     const unqualified = validBatch();
     unqualified.usage[0].events = { 'monetization.activation_failed': 1 };
     expect(() => parseTelemetryBatchV1(unqualified, NOW)).toThrow();
+  });
+
+  it('accepts the image-import counters next to the replace counter', () => {
+    const batch = validBatch();
+    const events = {
+      'image.import_local': 1,
+      'image.import_url': 2,
+      'image.import_local_failed': 3,
+      'image.import_url_failed': 4,
+      'image.replace': 5,
+    };
+    batch.usage[0].events = events;
+
+    expect(parseTelemetryBatchV1(batch, NOW).usage[0].events).toEqual(events);
   });
 
   it.each([

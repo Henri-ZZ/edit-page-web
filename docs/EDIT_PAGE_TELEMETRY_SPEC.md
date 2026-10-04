@@ -158,6 +158,11 @@ export const TELEMETRY_EVENTS = [
   'format.text_color',
   'format.background_color',
   'image.replace',
+  'image.resize',
+  'image.import_local',
+  'image.import_url',
+  'image.import_local_failed',
+  'image.import_url_failed',
   'element.remove',
   'history.undo',
   'history.redo',
@@ -203,6 +208,11 @@ export type ActivationFailureReason =
 | `text.edit` | A text-edit operation is committed, normally on blur/Enter/end-of-edit, and content actually changed. Do not count each keystroke. |
 | `format.*` | The corresponding formatting command is successfully applied once. Do not include values, colors, font sizes, selected text, or target details. |
 | `image.replace` | A replacement image is successfully applied to an element. Do not include image bytes, URL, filename, MIME metadata, or target information. |
+| `image.resize` | A resize drag is committed to history: the user releases the handle and the element's size actually changed. Count once per drag, never per pointer move, and do not count a drag that ends unchanged or is cancelled with Escape. Do not include pixel sizes, the handle direction, or the element's identity. |
+| `image.import_local` | A file chosen from the device is read, decoded, and accepted as the selected image. Count once per accepted import, after the free-tier quota gate — an import blocked by the limit counts `monetization.free_limit_reached` instead. Do not include filename, MIME type, bytes, dimensions, or the resulting data URL. |
+| `image.import_url` | A remote image URL passes validation and is accepted as the selected image. Count once per accepted import, after the free-tier quota gate. Do not include the URL, host, status code, content type, or filename. |
+| `image.import_local_failed` | A local file import reaches a terminal failure: the file cannot be read, or the decoded result is not a loadable image. Do not include the error message, filename, or MIME type. |
+| `image.import_url_failed` | A non-empty image-URL input reaches a terminal failure: it is not a usable `http(s)` URL, or remote validation/loading fails (timeout, blocked host, HTTP error, non-image content type). An empty input is not an attempt and MUST NOT count. Do not include the URL, host, status code, content type, or error text. |
 | `element.remove` | An element removal is successfully applied. Do not include tag, selector, text, or DOM path. |
 | `history.undo` / `history.redo` | The history command successfully changes Edit Page state. No-op commands do not count. |
 | `screenshot.viewport` | A viewport capture completes successfully and produces the internal image result. |
@@ -220,7 +230,7 @@ export type ActivationFailureReason =
 | `support.feedback_clicked` | The user clicks the Dashboard's Send Feedback button. |
 | `lifecycle.installed` | A newly installed extension reported for the first time. Emitted exactly once per installation, immediately after install and before any feature use, and it is the only counter that may trigger an immediate upload (see §8.2). It anchors `firstSeenAt` to the real install moment and makes install → uninstall measurable for users who never act. |
 
-All counters MUST be non-negative integers. For schema v1, ordinary event counters are stored by event name. Activation failures additionally use a bounded reason key such as `monetization.activation_failed.network_error`; the server derives this key only after enum validation. No general-purpose event properties are allowed.
+All counters MUST be non-negative integers. For schema v1, ordinary event counters are stored by event name. Activation failures additionally use a bounded reason key such as `monetization.activation_failed.network_error`; the server derives this key only after enum validation. No general-purpose event properties are allowed. The `image.import_*` counters measure one accepted import — one image the user chose — while `image.replace` measures one applied replacement, so a single import applied to three elements yields `image.import_*: 1` and `image.replace: 3`.
 
 ## 8. Extension-side aggregation and delivery
 
@@ -311,6 +321,7 @@ export interface TelemetrySettingsV1 {
   screenshotDestination: 'clipboard' | 'download';
   hideRepeatedElements: boolean;
   selectionToolbarEnabled: boolean;
+  replaceImageFit?: 'natural' | 'cover'; // optional: clients predating the preference omit it
 }
 
 export interface TelemetryOptionalPermissionsV1 {
@@ -358,7 +369,8 @@ export interface TelemetryBatchResponseV1 {
     "languagePreference": "browser",
     "screenshotDestination": "download",
     "hideRepeatedElements": true,
-    "selectionToolbarEnabled": true
+    "selectionToolbarEnabled": true,
+    "replaceImageFit": "cover"
   },
   "optionalPermissions": {
     "clipboardWrite": true,
@@ -372,6 +384,9 @@ export interface TelemetryBatchResponseV1 {
         "text.edit": 18,
         "format.bold": 4,
         "image.replace": 1,
+        "image.resize": 1,
+        "image.import_local": 1,
+        "image.import_url_failed": 1,
         "history.undo": 2,
         "screenshot.fullpage": 1,
         "screenshot.download": 1,

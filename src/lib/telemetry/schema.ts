@@ -63,6 +63,9 @@ const settingsSchema = z.object({
   screenshotDestination: z.enum(['clipboard', 'download']),
   hideRepeatedElements: z.boolean(),
   selectionToolbarEnabled: z.boolean(),
+  // Optional so a client that predates the preference can still be accepted
+  // while the extension and the API roll out independently.
+  replaceImageFit: z.enum(['natural', 'cover']).optional(),
 }).strict();
 
 const optionalPermissionsSchema = z.object({
