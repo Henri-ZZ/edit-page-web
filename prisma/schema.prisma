@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Installation {
-  id                  String             @id @default(cuid())
+  id                  Int                @id @default(autoincrement())
   installationId      String             @unique @db.Uuid
   firstSeenAt         DateTime           @default(now()) @db.Timestamptz(3)
   lastSeenAt          DateTime           @default(now()) @db.Timestamptz(3)
