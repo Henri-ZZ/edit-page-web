@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
 
 import {
   MAX_ACCEPTED_BATCHES_PER_INSTALLATION_PER_DAY,
@@ -107,9 +106,9 @@ export async function acceptTelemetryBatch(batch: TelemetryBatchRequestV1, now =
       const eventsJson = JSON.stringify(day.events);
       await tx.$executeRaw(Prisma.sql`
         INSERT INTO "UsageDaily" (
-          "id", "installationId", "date", "events", "createdAt", "updatedAt"
+          "installationId", "date", "events", "createdAt", "updatedAt"
         ) VALUES (
-          ${randomUUID()}, ${batch.installationId}::uuid, ${day.date}::date,
+          ${batch.installationId}::uuid, ${day.date}::date,
           ${eventsJson}::jsonb, ${now}, ${now}
         )
         ON CONFLICT ("installationId", "date") DO UPDATE

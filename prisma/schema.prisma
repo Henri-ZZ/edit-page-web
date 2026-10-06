@@ -36,7 +36,7 @@ model Installation {
 }
 
 model UsageDaily {
-  id             String       @id @default(cuid())
+  id             Int          @id @default(autoincrement())
   installationId String       @db.Uuid
   date           DateTime     @db.Date
   events         Json         @default("{}") @db.JsonB
