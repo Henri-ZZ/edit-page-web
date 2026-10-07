@@ -1,4 +1,28 @@
 {
+  "redirects": [
+    { "source": "/about", "destination": "/about/", "permanent": true },
+    { "source": "/contact", "destination": "/contact/", "permanent": true },
+    { "source": "/edit-text-on-webpage", "destination": "/edit-text-on-webpage/", "permanent": true },
+    { "source": "/full-page-screenshot", "destination": "/full-page-screenshot/", "permanent": true },
+    { "source": "/getting-started", "destination": "/getting-started/", "permanent": true },
+    { "source": "/goodbye", "destination": "/goodbye/", "permanent": true },
+    { "source": "/privacy", "destination": "/privacy/", "permanent": true },
+    { "source": "/refund", "destination": "/refund/", "permanent": true },
+    { "source": "/remove-elements-from-webpage", "destination": "/remove-elements-from-webpage/", "permanent": true },
+    { "source": "/replace-images-on-webpage", "destination": "/replace-images-on-webpage/", "permanent": true },
+    { "source": "/terms", "destination": "/terms/", "permanent": true },
+    { "source": "/zh/about", "destination": "/zh/about/", "permanent": true },
+    { "source": "/zh/contact", "destination": "/zh/contact/", "permanent": true },
+    { "source": "/zh/edit-text-on-webpage", "destination": "/zh/edit-text-on-webpage/", "permanent": true },
+    { "source": "/zh/full-page-screenshot", "destination": "/zh/full-page-screenshot/", "permanent": true },
+    { "source": "/zh/getting-started", "destination": "/zh/getting-started/", "permanent": true },
+    { "source": "/zh/goodbye", "destination": "/zh/goodbye/", "permanent": true },
+    { "source": "/zh/privacy", "destination": "/zh/privacy/", "permanent": true },
+    { "source": "/zh/refund", "destination": "/zh/refund/", "permanent": true },
+    { "source": "/zh/remove-elements-from-webpage", "destination": "/zh/remove-elements-from-webpage/", "permanent": true },
+    { "source": "/zh/replace-images-on-webpage", "destination": "/zh/replace-images-on-webpage/", "permanent": true },
+    { "source": "/zh/terms", "destination": "/zh/terms/", "permanent": true }
+  ],
   "crons": [
     {
       "path": "/api/internal/telemetry/retention",
