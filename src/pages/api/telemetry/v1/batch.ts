@@ -103,8 +103,21 @@ export const POST: APIRoute = async ({ request }) => {
     if (error instanceof TelemetryRateLimitError) {
       return json(request, { error: 'rate_limited' }, 429, { 'Retry-After': '3600' });
     }
-    // Never log the request, identifiers, database message, or stack here.
-    console.error('telemetry batch storage failed', { category: 'database_error' });
+    // Never log the request, identifiers, or stack here. Prisma's error code and
+    // message are safe: the code is a fixed constant (P2022 unknown column, P1001
+    // unreachable database, …) and the message only names the missing query engine
+    // runtime or the host that could not be reached — never request data, ids or
+    // credentials. Without them a database_error is impossible to diagnose.
+    const code = (error as { code?: unknown }).code;
+    console.error('telemetry batch storage failed', {
+      category: 'database_error',
+      code: typeof code === 'string' ? code : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      message:
+        error instanceof Error
+          ? error.message.split('\n').slice(0, 4).join(' | ')
+          : undefined,
+    });
     return json(request, { error: 'service_unavailable' }, 503, { 'Retry-After': '900' });
   }
 };

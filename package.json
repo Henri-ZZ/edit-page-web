@@ -10,7 +10,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "vercel-build": "pnpm db:migrate && astro build",
+    "vercel-build": "prisma generate && pnpm db:migrate && astro build",
     "postinstall": "prisma generate",
     "preview": "astro preview",
     "test": "vitest run",

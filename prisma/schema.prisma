@@ -1,5 +1,11 @@
 generator client {
   provider = "prisma-client-js"
+  // Vercel serverless functions run on Amazon Linux. Without this the generated
+  // client only carries the build machine's engine (e.g. darwin-arm64 when built
+  // on a Mac), and every query at runtime fails with "could not locate the Query
+  // Engine for runtime rhel-openssl-3.0.x" — which surfaces as a blanket
+  // database_error. See https://pris.ly/d/deployment
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
