@@ -23,6 +23,12 @@ model Installation {
   // disabled extension, and offline delivery failure — it is never proof that
   // the extension is still installed.
   uninstalledAt       DateTime?          @db.Timestamptz(3)
+  // Analytics-only marker: a non-null value means this installation has been
+  // identified as test/dirty data (by hand, from the analytics site) and is
+  // excluded from the distribution and event analytics. The timestamp doubles
+  // as the flag (null = not filtered), so there is deliberately no separate
+  // boolean that could drift out of sync with it.
+  filteredAt          DateTime?          @db.Timestamptz(3)
   firstVersion        String             @db.VarChar(32)
   currentVersion      String             @db.VarChar(32)
   browser             String             @db.VarChar(32)
