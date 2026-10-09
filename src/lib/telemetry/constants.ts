@@ -10,8 +10,10 @@ export const MAX_ACCEPTED_BATCHES_PER_INSTALLATION_PER_DAY = 48;
 export const MAX_STORED_COUNTER = Number.MAX_SAFE_INTEGER;
 
 export const TELEMETRY_EVENTS = [
+  'popup.open',
   'dashboard.open',
   'edit.start',
+  'remove.start',
   'text.edit',
   'format.bold',
   'format.italic',
@@ -20,6 +22,7 @@ export const TELEMETRY_EVENTS = [
   'format.font_size',
   'format.text_color',
   'format.background_color',
+  'image.replace.start',
   'image.replace',
   'image.resize',
   'image.import_local',

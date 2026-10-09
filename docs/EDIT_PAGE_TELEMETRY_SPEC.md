@@ -147,8 +147,10 @@ These are the complete schema-v1 event keys:
 
 ```ts
 export const TELEMETRY_EVENTS = [
+  'popup.open',
   'dashboard.open',
   'edit.start',
+  'remove.start',
   'text.edit',
   'format.bold',
   'format.italic',
@@ -157,6 +159,7 @@ export const TELEMETRY_EVENTS = [
   'format.font_size',
   'format.text_color',
   'format.background_color',
+  'image.replace.start',
   'image.replace',
   'image.resize',
   'image.import_local',
@@ -203,10 +206,13 @@ export type ActivationFailureReason =
 
 | Event | Increment exactly when |
 |---|---|
+| `popup.open` | The extension popup finishes opening. Count once per popup load, before any early return, so opening the popup on a page that cannot be edited still counts. Do not include the tab URL, the page type, or what the popup was opened for. |
 | `dashboard.open` | The extension Dashboard finishes opening. Count once per page load. |
-| `edit.start` | Edit mode transitions from inactive to active. Repeated clicks while already active do not count. |
+| `edit.start` | Text edit mode transitions from inactive to active **because the user asked for it**. Repeated clicks while already active do not count, and neither does the Dashboard's automatic entry on popup open: these counters observe user actions, so an automatically entered mode MUST NOT count. This is the tool-entry counter for Edit text. |
+| `remove.start` | Remove mode transitions from inactive to active and the mode actually started **because the user asked for it**. Repeated clicks while already active do not count, a start that fails on an unsupported page does not count, and the Dashboard's automatic entry on popup open MUST NOT count. This is the tool-entry counter for Remove element. |
 | `text.edit` | A text-edit operation is committed, normally on blur/Enter/end-of-edit, and content actually changed. Do not count each keystroke. |
 | `format.*` | The corresponding formatting command is successfully applied once. Do not include values, colors, font sizes, selected text, or target details. |
+| `image.replace.start` | Replace mode transitions from inactive to active after an image has been selected **and the user asked for it**. Repeated clicks while already active do not count, and the automatic entry that follows an accepted import MUST NOT count. This is the tool-entry counter for Change image. |
 | `image.replace` | A replacement image is successfully applied to an element. Do not include image bytes, URL, filename, MIME metadata, or target information. |
 | `image.resize` | A resize drag is committed to history: the user releases the handle and the element's size actually changed. Count once per drag, never per pointer move, and do not count a drag that ends unchanged or is cancelled with Escape. Do not include pixel sizes, the handle direction, or the element's identity. |
 | `image.import_local` | A file chosen from the device is read, decoded, and accepted as the selected image. Count once per accepted import, after the free-tier quota gate — an import blocked by the limit counts `monetization.free_limit_reached` instead. Do not include filename, MIME type, bytes, dimensions, or the resulting data URL. |
@@ -230,7 +236,7 @@ export type ActivationFailureReason =
 | `support.feedback_clicked` | The user clicks the Dashboard's Send Feedback button. |
 | `lifecycle.installed` | A newly installed extension reported for the first time. Emitted exactly once per installation, immediately after install and before any feature use, and it is the only counter that may trigger an immediate upload (see §8.2). It anchors `firstSeenAt` to the real install moment and makes install → uninstall measurable for users who never act. |
 
-All counters MUST be non-negative integers. For schema v1, ordinary event counters are stored by event name. Activation failures additionally use a bounded reason key such as `monetization.activation_failed.network_error`; the server derives this key only after enum validation. No general-purpose event properties are allowed. The `image.import_*` counters measure one accepted import — one image the user chose — while `image.replace` measures one applied replacement, so a single import applied to three elements yields `image.import_*: 1` and `image.replace: 3`.
+All counters MUST be non-negative integers. For schema v1, ordinary event counters are stored by event name. Activation failures additionally use a bounded reason key such as `monetization.activation_failed.network_error`; the server derives this key only after enum validation. No general-purpose event properties are allowed. The `image.import_*` counters measure one accepted import — one image the user chose — while `image.replace` measures one applied replacement, so a single import applied to three elements yields `image.import_*: 1` and `image.replace: 3`. The three tool-entry counters — `edit.start`, `remove.start`, and `image.replace.start` — are the only counters that measure entering a tool; tool-entry comparisons MUST use these three and MUST NOT be inferred from the action counters (`text.edit`, `element.remove`, `image.replace`), which count committed actions instead. All three count **user-initiated entries only**: an automatic entry — the Dashboard's auto-enter setting on popup open, or the automatic entry that follows an accepted image import — MUST NOT count even though the mode really did start. This exemption is scoped to the three tool-entry counters and MUST NOT be widened: every other counter records each occurrence, including ones the extension itself triggers. `popup.open` counts the popup surface even when the extension opened the popup programmatically, and the monetization system counters (`monetization.checkin_succeeded`, `monetization.upgrade_shown`) describe system activity rather than user actions and are counted normally. `popup.open` measures the popup surface itself, not any tool.
 
 ## 8. Extension-side aggregation and delivery
 

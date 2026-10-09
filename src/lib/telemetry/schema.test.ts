@@ -153,6 +153,19 @@ describe('parseTelemetryBatchV1', () => {
     expect(parseTelemetryBatchV1(batch, NOW).usage[0].events).toEqual(events);
   });
 
+  it('accepts the tool-entry counters', () => {
+    const batch = validBatch();
+    const events = {
+      'popup.open': 1,
+      'edit.start': 2,
+      'remove.start': 3,
+      'image.replace.start': 4,
+    };
+    batch.usage[0].events = events;
+
+    expect(parseTelemetryBatchV1(batch, NOW).usage[0].events).toEqual(events);
+  });
+
   it.each([
     'dashboard.open',
     'monetization.learn_premium_clicked',
