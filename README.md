@@ -15,7 +15,6 @@ pnpm dev
 2. 在 Vercel 导入项目
 3. Node.js 版本：`package.json` 的 `engines.node` 已固定为 `24.x`，它会覆盖 Vercel 的
    `Settings > General > Node.js Version` 设置，无需手动改后台。
-   Vercel 已计划在 2026-10-01 停用 Node 20，升级后请确认部署使用的是 24。
 4. 在 Vercel 的 `Settings > Environment Variables` 配置环境变量：
     - `PADDLE_ENVIRONMENT`
     - `PADDLE_CLIENT_TOKEN`
@@ -81,14 +80,16 @@ pnpm build
 
 ```
 src/
+├── assets/        # 图片 / 视频资源
+├── components/    # 页面组件
 ├── i18n/          # 翻译文件
 ├── layouts/       # 布局组件
 ├── lib/           # 共享工具
-├── components/    # 页面组件
 └── pages/         # 页面
-    ├── index.astro
-    ├── terms.astro
-    ├── refund.astro
-    ├── privacy.astro
+    ├── api/       # 遥测接口
     └── zh/        # 中文页面
 ```
+
+SEO 落地页（`edit-text-on-webpage`、`replace-images-on-webpage`、
+`remove-elements-from-webpage`、`full-page-screenshot`）的文案与 slug 定义在
+`src/lib/landing-pages.ts`，页面由 `src/pages/*.astro` 与 `src/pages/zh/*.astro` 渲染。
